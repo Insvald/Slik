@@ -50,7 +50,7 @@ namespace Slik.Cache.Tests
         }
 
         [TestMethod]
-        [Ignore]
+        //[Ignore]
         public async Task Cluster_Consensus_HappyPath()
         {
             int instances = 3;
@@ -59,13 +59,19 @@ namespace Slik.Cache.Tests
             using (var cts = new CancellationTokenSource())
             {
                 cts.CancelAfter(TimeSpan.FromSeconds(7));
-                await RunInstances(instances, TestProjectPath, n => $"--port={startPort + n}", cts.Token);
+                
+                await RunInstances(instances, TestProjectPath, n =>
+                {
+                    string path = Path.Combine(Directory.GetCurrentDirectory(), $"{startPort + n}");
+                    return $"--port={startPort + n} --folder=\"{path}\"";
+                }
+                , cts.Token);
 
                 // collect logs and compare history from each node
                 List<string[]> history = new();
                 for (int n = 0; n < instances; n++)
                 {
-                    string historyFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Slik", $"{startPort + n}", "history.txt");
+                    string historyFileName = Path.Combine($"{startPort + n}", "history.txt");
                     var instanceHistory = await File.ReadAllLinesAsync(historyFileName);
                     history.Add(instanceHistory);
                 }

@@ -24,13 +24,12 @@ if (string.IsNullOrEmpty(port))
 }
 
 // expanding environment variable on Ubuntu doesn't work for some reason
-string dataFolder = config["folder"] ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Slik", port);
+string dataFolder = config["folder"] ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Slik");
 string logsFolder = Path.Combine(dataFolder, "Logs");
 string cacheFolder = Path.Combine(dataFolder, "Cache");
 
 using var logger = Slik.Node.Startup.SetupSerilog(logsFolder);
-logger.Debug($"The node has started. Listening on '{port}'");
-logger.Information($"Slik Node v{Assembly.GetExecutingAssembly().GetName().Version}\n");
+logger.Information($"Slik Node v{Assembly.GetExecutingAssembly().GetName().Version}. Listening on port {port}");
 
 try
 {
@@ -40,7 +39,7 @@ try
         .ConfigureAppConfiguration(builder => builder.AddJsonFile("appsettings.json").AddInMemoryCollection(new[] 
         { 
             new KeyValuePair<string, string>("cacheLogLocation", cacheFolder),
-            new KeyValuePair<string, string>("folder", dataFolder),
+            new KeyValuePair<string, string>("folder", dataFolder) // in case it has been changed
         }))
         .ConfigureWebHostDefaults(webBuilder => webBuilder            
             .Configure(app => app.UseConsensusProtocolHandler())
