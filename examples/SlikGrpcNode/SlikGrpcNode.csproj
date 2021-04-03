@@ -3,12 +3,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>Slik.Node</RootNamespace>
+    <RootNamespace>Slik.GrpcNode</RootNamespace>
     <Nullable>enable</Nullable>
     <Version>0.0.1</Version>
     <Authors>Ilya Rovensky</Authors>
     <Product>Slik</Product>
-    <Description>Lightweight in-process distributed cache based on Raft consensus protocol</Description>
+    <Description>Lightweight distributed cache based on Raft consensus protocol with gRPC endpoint</Description>
     <Copyright>(c) 2021 Ilya Rovensky</Copyright>
   </PropertyGroup>
 

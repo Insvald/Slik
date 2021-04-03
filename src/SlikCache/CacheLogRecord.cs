@@ -13,7 +13,7 @@ namespace Slik.Cache
 
     public class CacheLogRecord : IEquatable<CacheLogRecord>
     {
-        public CacheLogRecord(CacheOperation operation, string key, byte[]? value, DistributedCacheEntryOptions? options = null)
+        public CacheLogRecord(CacheOperation operation, string key, byte[] value, DistributedCacheEntryOptions? options = null)
         {
             Operation = operation;
             Key = key;
@@ -23,10 +23,10 @@ namespace Slik.Cache
 
         public CacheOperation Operation { get; }
         public string Key { get; }
-        public byte[]? Value { get; }
+        public byte[] Value { get; }
         public DistributedCacheEntryOptions? Options { get; }
 
-        public override bool Equals(object? obj) => (obj is CacheLogRecord) && Equals((CacheLogRecord)obj);
+        public override bool Equals(object? obj) => (obj is CacheLogRecord record) && Equals(record);
 
         public override int GetHashCode() => HashCode.Combine(Operation, Key, Value, Options);
 

@@ -14,7 +14,7 @@ namespace Slik.Cache.Tests
     {
         private readonly SlikCache _cache = SlikCacheHelper.InitCache();
         private readonly SlikRouter _router;
-        private readonly Mock<IMessageBus> _messageBusMock = new Mock<IMessageBus>();
+        private readonly Mock<IMessageBus> _messageBusMock = new ();
 
         public SlikRouterTests()
         {
@@ -74,7 +74,7 @@ namespace Slik.Cache.Tests
         public async Task UpdateLeaderAsync_LocalLeader_ReturnsFalse()
         {            
             ArrangeLeader(false);
-            bool handled = await _router.UpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", null));
+            bool handled = await _router.UpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>()));
             Assert.IsFalse(handled);
         }
 
@@ -82,7 +82,7 @@ namespace Slik.Cache.Tests
         public async Task UpdateLeaderAsync_RemoteLeader_ReturnsTrue()
         {                     
             ArrangeLeader(true, SlikRouter.OK);
-            bool handled = await _router.UpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", null));
+            bool handled = await _router.UpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>()));
             Assert.IsTrue(handled);
         }
 
@@ -90,7 +90,8 @@ namespace Slik.Cache.Tests
         public async Task UpdateLeaderAsync_RemoteLeaderDoesNotConfirm_ThrowsException()
         {
             ArrangeLeader(true, "Not OK");
-            await Assert.ThrowsExceptionAsync<SlikRouter.RouterException>(() => _router.UpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", null)).AsTask());            
+            await Assert.ThrowsExceptionAsync<SlikRouter.RouterException>(() => 
+                _router.UpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>())).AsTask());            
         }
 
         private async Task<string> ArrangeMessageAndReadResponse(IMessage message)
@@ -153,7 +154,7 @@ namespace Slik.Cache.Tests
             bool relayed = false;
             ArrangeLeader(true, SlikRouter.OK, () => relayed = true);
 
-            var message = new JsonMessage<CacheLogRecord>(SlikRouter.RequestMessageName, new CacheLogRecord(CacheOperation.Update, "key", null));
+            var message = new JsonMessage<CacheLogRecord>(SlikRouter.RequestMessageName, new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>()));
 
             string response = await ArrangeMessageAndReadResponse(message);
 

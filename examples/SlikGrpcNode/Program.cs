@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Slik.Cache;
-using Slik.Node;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,7 +25,7 @@ string dataFolder = config["folder"] ?? Path.Combine(Environment.GetFolderPath(E
 string logsFolder = Path.Combine(dataFolder, "Logs");
 string cacheFolder = Path.Combine(dataFolder, "Cache");
 
-using var logger = Slik.Node.Startup.SetupSerilog(logsFolder);
+using var logger = Slik.GrpcNode.Startup.SetupSerilog(logsFolder);
 logger.Information($"Slik Node v{Assembly.GetExecutingAssembly().GetName().Version}. Listening on port {port}");
 
 try
@@ -38,10 +36,10 @@ try
         .ConfigureAppConfiguration(builder => builder.AddJsonFile("appsettings.json").AddInMemoryCollection(new[] 
         { 
             new KeyValuePair<string, string>("cacheLogLocation", cacheFolder),
+            new KeyValuePair<string, string>("protocolVersion", "http2"), // TODO check if required       
             new KeyValuePair<string, string>("folder", dataFolder) // in case it has been changed
         }))
-        .ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureServices(services => services.AddHostedService<CacheConsumer>()))
-        .UseSlik()
+        .UseSlik(externalApi: true)
         .Build()
         .RunAsync();
 }

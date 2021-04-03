@@ -6,13 +6,13 @@
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
   </PropertyGroup>
-
-  <ItemGroup>
-    <!--<PackageReference Include="DotNext.AspNetCore.Cluster" Version="3.0.2" />-->
-    <PackageReference Include="DotNext.AspNetCore.Cluster" Version="3.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+  
+  <ItemGroup>    
+    <PackageReference Include="DotNext.AspNetCore.Cluster" Version="3.*" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="5.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.*" />
+    <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.*" />
   </ItemGroup>
 
 </Project>

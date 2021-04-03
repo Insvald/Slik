@@ -10,7 +10,7 @@ namespace Slik.Cache.Tests
         [TestMethod]
         public void UntypedEquals_Null_ReturnsFalse()
         {
-            var testRecord = new CacheLogRecord(CacheOperation.Remove, "key", null, null);
+            var testRecord = new CacheLogRecord(CacheOperation.Remove, "key", Array.Empty<byte>(), null);
 
             bool result = testRecord.Equals((object?)null);
 
@@ -20,7 +20,7 @@ namespace Slik.Cache.Tests
         [TestMethod]
         public void UntypedEquals_NotCacheLogRecord_ReturnsFalse()
         {
-            var testRecord = new CacheLogRecord(CacheOperation.Remove, "key", null, null);
+            var testRecord = new CacheLogRecord(CacheOperation.Remove, "key", Array.Empty<byte>(), null);
 
             bool result = testRecord.Equals(new object());
 
@@ -30,8 +30,8 @@ namespace Slik.Cache.Tests
         [TestMethod]
         public void UntypedEquals_SimilarCacheLogRecord_ReturnsTrue()
         {
-            var testRecord1 = new CacheLogRecord(CacheOperation.Remove, "key", null, null);
-            var testRecord2 = new CacheLogRecord(CacheOperation.Remove, "key", null, null);
+            var testRecord1 = new CacheLogRecord(CacheOperation.Remove, "key", Array.Empty<byte>(), null);
+            var testRecord2 = new CacheLogRecord(CacheOperation.Remove, "key", Array.Empty<byte>(), null);
 
             bool result = testRecord1.Equals((object)testRecord2);
 
@@ -41,7 +41,7 @@ namespace Slik.Cache.Tests
         [TestMethod]
         public void TypedEquals_Null_ReturnsFalse()
         {
-            var testRecord = new CacheLogRecord(CacheOperation.Remove, "key", null, null);
+            var testRecord = new CacheLogRecord(CacheOperation.Remove, "key", Array.Empty<byte>(), null);
 
             bool result = testRecord.Equals(null);
 
@@ -51,8 +51,8 @@ namespace Slik.Cache.Tests
         [TestMethod]
         public void TypedEquals_SimilarCacheLogRecord_ReturnsTrue()
         {
-            var testRecord1 = new CacheLogRecord(CacheOperation.Remove, "key", null, null);
-            var testRecord2 = new CacheLogRecord(CacheOperation.Remove, "key", null, null);
+            var testRecord1 = new CacheLogRecord(CacheOperation.Remove, "key", Array.Empty<byte>(), null);
+            var testRecord2 = new CacheLogRecord(CacheOperation.Remove, "key", Array.Empty<byte>(), null);
 
             bool result = testRecord1.Equals(testRecord2);
 
@@ -62,8 +62,8 @@ namespace Slik.Cache.Tests
         [TestMethod]
         public void TypedEquals_DifferentOperations_ReturnsFalse()
         {
-            var testRecord1 = new CacheLogRecord(CacheOperation.Remove, "key", null, null);
-            var testRecord2 = new CacheLogRecord(CacheOperation.Update, "key", null, null);
+            var testRecord1 = new CacheLogRecord(CacheOperation.Remove, "key", Array.Empty<byte>(), null);
+            var testRecord2 = new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>(), null);
 
             bool result = testRecord1.Equals(testRecord2);
 
@@ -73,8 +73,8 @@ namespace Slik.Cache.Tests
         [TestMethod]
         public void TypedEquals_DifferentKeys_ReturnsFalse()
         {
-            var testRecord1 = new CacheLogRecord(CacheOperation.Remove, "key1", null, null);
-            var testRecord2 = new CacheLogRecord(CacheOperation.Remove, "key2", null, null);
+            var testRecord1 = new CacheLogRecord(CacheOperation.Remove, "key1", Array.Empty<byte>(), null);
+            var testRecord2 = new CacheLogRecord(CacheOperation.Remove, "key2", Array.Empty<byte>(), null);
 
             bool result = testRecord1.Equals(testRecord2);
 
@@ -95,8 +95,10 @@ namespace Slik.Cache.Tests
         [TestMethod]
         public void TypedEquals_DifferentOptions_ReturnsFalse()
         {
-            var testRecord1 = new CacheLogRecord(CacheOperation.Update, "key", null, new DistributedCacheEntryOptions { AbsoluteExpiration = new DateTimeOffset() });
-            var testRecord2 = new CacheLogRecord(CacheOperation.Update, "key", null, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(1) });
+            var testRecord1 = new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>(), 
+                new DistributedCacheEntryOptions { AbsoluteExpiration = new DateTimeOffset() });
+            var testRecord2 = new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>(), 
+                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(1) });
 
             bool result = testRecord1.Equals(testRecord2);
 

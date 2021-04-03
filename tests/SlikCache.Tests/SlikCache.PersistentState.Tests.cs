@@ -24,7 +24,7 @@ namespace Slik.Cache.Tests
                 new CacheLogRecord(CacheOperation.Update, key1, new byte[] { 1 }),
                 new CacheLogRecord(CacheOperation.Update, key2, new byte[] { 2 }),
                 new CacheLogRecord(CacheOperation.Update, key1, expectedValue1),
-                new CacheLogRecord(CacheOperation.Remove, key2, null),
+                new CacheLogRecord(CacheOperation.Remove, key2, Array.Empty<byte>()),
             };
 
             string logLocation = string.Empty;

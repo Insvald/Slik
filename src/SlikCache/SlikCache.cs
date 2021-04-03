@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2, PublicKey=0024000004800000940000000602000000240000525341310004000001000100c547cac37abd99c8db225ef2f6c8a3602f3b3606cc9891605d02baa56104f4cfc0734aa39b93bf7852f7d9266654753cc297e7d2edfe0bac1cdcf9f717241550e0a7b191195b7667bb4f64bcb8e2121380fd1d9d46ad2d92d2d15605093924cceaf74c4861eff62abf69b9291ed0a340e113be11e6a7d3113e92484cf7045cc7")]
 
 namespace Slik.Cache
-{
+{    
     /// <summary>
     /// Distributed Cache Implementation 
     /// </summary>
@@ -124,9 +124,9 @@ namespace Slik.Cache
 
         #region IDistributedCache implementation
 
-        public byte[]? Get(string key) => GetAsync(key).Result;
+        public byte[] Get(string key) => GetAsync(key).Result;
 
-        public async Task<byte[]?> GetAsync(string key, CancellationToken token = default)
+        public async Task<byte[]> GetAsync(string key, CancellationToken token = default)
         {
             _logger.LogDebug($"Reading entry '{key}'");
 
@@ -137,8 +137,7 @@ namespace Slik.Cache
                 // if there is a sliding expiration, refresh it
                 if (_slidingExpirations.Contains(key))
                 {
-                    // fire and forget, no cancellation token
-                    _ = BroadcastRefreshAsync(key);
+                    _ = BroadcastRefreshAsync(key, token);
                 }
 
                 return result;
@@ -155,12 +154,12 @@ namespace Slik.Cache
 
         private async Task BroadcastRefreshAsync(string key, CancellationToken token = default)
         {
-            var record = new CacheLogRecord(CacheOperation.Refresh, key, null);
+            var record = new CacheLogRecord(CacheOperation.Refresh, key, Array.Empty<byte>());
 
-            await RedirectApplyReplicateAsync(record, () => Task.FromResult<byte[]?>(null), token).ConfigureAwait(false);
+            await RedirectApplyReplicateAsync(record, () => Task.FromResult(Array.Empty<byte>()), token).ConfigureAwait(false);
         }
 
-        private async Task RedirectApplyReplicateAsync(CacheLogRecord record, Func<Task<byte[]?>> localUpdateAction, CancellationToken token = default)
+        private async Task RedirectApplyReplicateAsync(CacheLogRecord record, Func<Task<byte[]>> localUpdateAction, CancellationToken token = default)
         {
             bool handled = false;
 
@@ -211,7 +210,12 @@ namespace Slik.Cache
                                         $"Error while updating remote storages. Rolling back changes and dropping uncommitted entry #{logIndex}");
 
                                     if (record.Operation != CacheOperation.Refresh)
-                                        await _internalCache.SetAsync(record.Key, fallbackValue, record.Options ?? new(), token);
+                                    {
+                                        if (fallbackValue != null && fallbackValue.Length > 0)
+                                            await _internalCache.SetAsync(record.Key, fallbackValue, record.Options ?? new(), token);
+                                        else
+                                            await _internalCache.RemoveAsync(record.Key, token);
+                                    }
 
                                     await DropAsync(logIndex, token).ConfigureAwait(false);
 
@@ -240,7 +244,7 @@ namespace Slik.Cache
         {
             _logger.LogDebug($"Removing entry '{key}'");
 
-            var record = new CacheLogRecord(CacheOperation.Remove, key, null);
+            var record = new CacheLogRecord(CacheOperation.Remove, key, Array.Empty<byte>());
 
             await RedirectApplyReplicateAsync(record, async () =>
             {
@@ -250,13 +254,13 @@ namespace Slik.Cache
                     await _internalCache.RemoveAsync(key, token).ConfigureAwait(false);
                     _slidingExpirations.Remove(key);
                 }
-                return oldValue;
+                return oldValue ?? Array.Empty<byte>();
             }, token).ConfigureAwait(false);
         }
 
-        public void Set(string key, byte[]? value, DistributedCacheEntryOptions? options) => SetAsync(key, value, options).Wait();
+        public void Set(string key, byte[] value, DistributedCacheEntryOptions? options) => SetAsync(key, value, options).Wait();
 
-        public async Task SetAsync(string key, byte[]? value, DistributedCacheEntryOptions? options, CancellationToken token = default)
+        public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions? options, CancellationToken token = default)
         {
             _logger.LogDebug($"Updating entry '{key}'");
 
@@ -272,7 +276,7 @@ namespace Slik.Cache
                 else
                     _slidingExpirations.Remove(key);
 
-                return oldValue;
+                return oldValue ?? Array.Empty<byte>();
             }, token).ConfigureAwait(false);
         }
         #endregion

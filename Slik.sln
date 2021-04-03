@@ -26,6 +26,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikGrpcNode", "examples\SlikGrpcNode\SlikGrpcNode.csproj", "{827E0484-15A6-4F59-918D-D8AC19480DA8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{E586B3F2-3681-4634-A14D-1B205C7A06B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E586B3F2-3681-4634-A14D-1B205C7A06B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E586B3F2-3681-4634-A14D-1B205C7A06B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{827E0484-15A6-4F59-918D-D8AC19480DA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{827E0484-15A6-4F59-918D-D8AC19480DA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{827E0484-15A6-4F59-918D-D8AC19480DA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{827E0484-15A6-4F59-918D-D8AC19480DA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,6 +58,7 @@ Global
 		{2C97FD04-CFFC-4C10-A9D6-690A6C7EC34F} = {E489BADE-712B-41D0-8D39-F2D6976C66F6}
 		{7A3EEC6E-41BD-4837-A134-BF92CF6AE4CA} = {400B4B8E-5876-43F5-863A-EE99E6B6A1F1}
 		{E586B3F2-3681-4634-A14D-1B205C7A06B9} = {D13362F1-AC5C-47D4-B5D1-599BE50DA652}
+		{827E0484-15A6-4F59-918D-D8AC19480DA8} = {D13362F1-AC5C-47D4-B5D1-599BE50DA652}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6A93E74-376C-4395-AD7B-E465B401FB1C}
