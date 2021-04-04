@@ -37,7 +37,7 @@ namespace Slik.Cache
                     })
                     .ConfigureKestrel((context, options) => options.ListenLocalhost(
                         context.Configuration.GetValue<int>("port"),
-                        opt => opt.Protocols = HttpProtocols.Http2)))
+                        opt => opt.Protocols = externalApi ? HttpProtocols.Http2 : HttpProtocols.Http1AndHttp2)))
                 .ConfigureServices(services =>
                 {
                     services

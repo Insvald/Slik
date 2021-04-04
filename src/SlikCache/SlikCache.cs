@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2, PublicKey=0024000004800000940000000602000000240000525341310004000001000100c547cac37abd99c8db225ef2f6c8a3602f3b3606cc9891605d02baa56104f4cfc0734aa39b93bf7852f7d9266654753cc297e7d2edfe0bac1cdcf9f717241550e0a7b191195b7667bb4f64bcb8e2121380fd1d9d46ad2d92d2d15605093924cceaf74c4861eff62abf69b9291ed0a340e113be11e6a7d3113e92484cf7045cc7")]
 
 namespace Slik.Cache
-{    
+{
     /// <summary>
     /// Distributed Cache Implementation 
     /// </summary>
@@ -23,8 +23,8 @@ namespace Slik.Cache
         private readonly MemoryDistributedCache _internalCache;
         private readonly HashSet<string> _slidingExpirations = new();
         private readonly ILogger<SlikCache> _logger;
-        private readonly AsyncReaderWriterLock _appendLock = new();
-        private CacheLogRecord? _recordBeingAppendedLocally;
+        private readonly NamedLockFactory _lockFactory = new();
+        private Guid _recordBeingAppendedLocally;
         private readonly ILoggerFactory _loggerFactory;
 
         public const string LogLocationConfiguration = "cacheLogLocation";
@@ -42,7 +42,7 @@ namespace Slik.Cache
             _loggerFactory = loggerFactory;
             _logger = _loggerFactory.CreateLogger<SlikCache>();
             LogLocation = configuration[LogLocationConfiguration];
-            _internalCache = new MemoryDistributedCache(Microsoft.Extensions.Options.Options.Create(new MemoryDistributedCacheOptions()), loggerFactory);
+            _internalCache = new MemoryDistributedCache(Microsoft.Extensions.Options.Options.Create(new MemoryDistributedCacheOptions()), loggerFactory);            
         }
 
         protected override async ValueTask ApplyAsync(LogEntry entry)
@@ -57,15 +57,15 @@ namespace Slik.Cache
 
                 if (deserializedEntry is CacheLogRecord record)
                 {
-                    bool isSameRecord = record.Equals(_recordBeingAppendedLocally);
+                    bool isSameRecord = record.Id.Equals(_recordBeingAppendedLocally);
 
                     _logger.LogDebug(isSameRecord
-                        ? "Same record, no lock"
+                        ? "Same record, no lock" // it's the case when a leader updates itself
                         : "Not the same record, lock will be obtained");
 
                     using (isSameRecord
                         ? (AsyncLock.Holder?)null // no lock needed, it's the same record, we obtained a lock for it already and are inside of the code to apply it
-                        : await _appendLock.AcquireWriteLockAsync(CancellationToken.None).ConfigureAwait(false))
+                        : await _lockFactory.AcquireWriteLockAsync(record.Key).ConfigureAwait(false))
                     {
                         string action = string.Empty;
                         switch (record.Operation)
@@ -118,7 +118,7 @@ namespace Slik.Cache
 
         protected override async ValueTask DisposeAsyncCore()
         {
-            await _appendLock.DisposeAsync().ConfigureAwait(false);
+            await _lockFactory.DisposeAsync().ConfigureAwait(false);
             await base.DisposeAsyncCore().ConfigureAwait(false);
         }
 
@@ -130,8 +130,8 @@ namespace Slik.Cache
         {
             _logger.LogDebug($"Reading entry '{key}'");
 
-            using (await _appendLock.AcquireReadLockAsync(token).ConfigureAwait(false))
-            {                
+            using (await _lockFactory.AcquireReadLockAsync(key, token).ConfigureAwait(false))
+            {
                 var result = await _internalCache.GetAsync(key, token).ConfigureAwait(false);
 
                 // if there is a sliding expiration, refresh it
@@ -154,7 +154,10 @@ namespace Slik.Cache
 
         private async Task BroadcastRefreshAsync(string key, CancellationToken token = default)
         {
-            var record = new CacheLogRecord(CacheOperation.Refresh, key, Array.Empty<byte>());
+            var record = new CacheLogRecord(CacheOperation.Refresh, key, Array.Empty<byte>())
+            {
+                Id = Guid.NewGuid()
+            }; 
 
             await RedirectApplyReplicateAsync(record, () => Task.FromResult(Array.Empty<byte>()), token).ConfigureAwait(false);
         }
@@ -171,9 +174,9 @@ namespace Slik.Cache
                 {
                     _logger.LogDebug("The change is not handled by the router, applying locally");
 
-                    using (await _appendLock.AcquireWriteLockAsync(token).ConfigureAwait(false))
+                    using (await _lockFactory.AcquireWriteLockAsync(record.Key, token).ConfigureAwait(false))
                     {
-                        _recordBeingAppendedLocally = record;
+                        _recordBeingAppendedLocally = record.Id;
                         try
                         {
                             var fallbackValue = await localUpdateAction().ConfigureAwait(false);                            
@@ -227,7 +230,7 @@ namespace Slik.Cache
                         }
                         finally
                         {
-                            _recordBeingAppendedLocally = null;
+                            _recordBeingAppendedLocally = default;
                         }
                     }
                 }
@@ -244,7 +247,10 @@ namespace Slik.Cache
         {
             _logger.LogDebug($"Removing entry '{key}'");
 
-            var record = new CacheLogRecord(CacheOperation.Remove, key, Array.Empty<byte>());
+            var record = new CacheLogRecord(CacheOperation.Remove, key, Array.Empty<byte>())
+            {
+                Id = Guid.NewGuid()
+            };
 
             await RedirectApplyReplicateAsync(record, async () =>
             {
@@ -264,7 +270,10 @@ namespace Slik.Cache
         {
             _logger.LogDebug($"Updating entry '{key}'");
 
-            var record = new CacheLogRecord(CacheOperation.Update, key, value, options);
+            var record = new CacheLogRecord(CacheOperation.Update, key, value, options)
+            {
+                Id = Guid.NewGuid()
+            };
 
             await RedirectApplyReplicateAsync(record, async () =>
             {
