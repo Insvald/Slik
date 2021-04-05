@@ -1,52 +1,22 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Serilog;
-using Slik.Cache;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
+﻿using CommandLine;
+using Slik.GrpcNode;
+using System.Threading.Tasks;
 
-var config = new ConfigurationBuilder()
-    .AddCommandLine(args)
-    .Build();
+await Parser
+    .Default
+    .ParseArguments<CommandLineOptions>(args)
+    .MapResult(
+        async (CommandLineOptions opts) => await new Startup().StartHostAsync(opts.Port, opts.Members, opts.Folder),
+        errs => Task.FromResult(-1));
 
-string port = config["port"];
-if (string.IsNullOrEmpty(port))
+public class CommandLineOptions
 {
-    Console.WriteLine("No port specified. The node is closing.");
-    Environment.ExitCode = -2;
-    return;
-}
+    [Option(shortName: 'p', longName: "port", Required = true, HelpText = "Port to use for the local instance.")]
+    public ushort Port { get; set; }
 
-// expanding environment variable on Ubuntu doesn't work for some reason
-string dataFolder = config["folder"] ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Slik");
-string logsFolder = Path.Combine(dataFolder, "Logs");
-string cacheFolder = Path.Combine(dataFolder, "Cache");
+    [Option(shortName: 'm', longName: "members", Required = true, HelpText = "List of cluster members.")]
+    public string Members { get; set; } = "";
 
-using var logger = Slik.GrpcNode.Startup.SetupSerilog(logsFolder);
-logger.Information($"Slik gRPC Node v{Assembly.GetExecutingAssembly().GetName().Version}. Listening on port {port}");
-
-try
-{
-    await Host
-        .CreateDefaultBuilder(args)
-        .UseSerilog(logger)
-        .ConfigureAppConfiguration(builder => builder.AddJsonFile("appsettings.json").AddInMemoryCollection(new[] 
-        { 
-            new KeyValuePair<string, string>("cacheLogLocation", cacheFolder),
-            //new KeyValuePair<string, string>("protocolVersion", "http2"), 
-            new KeyValuePair<string, string>("folder", dataFolder) // in case it has been changed
-        }))
-        .ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureServices(services => services.AddHostedService<CacheConsumer>()))
-        .UseSlik(enableGrpcApi: true)
-        .Build()
-        .RunAsync();
-}
-catch (Exception ex)
-{
-    logger.Fatal(ex, $"Fatal error occured: {ex.Message}. The node is closing.");
-    Environment.ExitCode = -1;
+    [Option(shortName: 'f', longName: "folder", Required = false, HelpText = "Folder for cache data.", Default = null)]
+    public string? Folder { get; set; } = "";
 }

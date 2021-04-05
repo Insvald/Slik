@@ -70,7 +70,8 @@ namespace Slik.Cache.Tests
             await RunInstances(instances, InProceNodeProjectPath, n =>
             {
                 string path = Path.Combine(Directory.GetCurrentDirectory(), $"{startPort + n}");
-                return $"--port={startPort + n} --folder=\"{path}\"";
+                string memberList = $"{string.Join(",", Enumerable.Range(startPort, instances).Select(port => $"localhost:{port}")) }";
+                return $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberList}\"";
             }, cts.Token);
 
             // collect logs and compare history from each node
@@ -103,7 +104,7 @@ namespace Slik.Cache.Tests
             }            
         }
 
-        private static HttpMessageHandler _httpHandler = new RaftClientHandlerFactory().CreateHandler("");
+        private static readonly HttpMessageHandler _httpHandler = new RaftClientHandlerFactory().CreateHandler("");
 
         private GrpcChannel GetChannel(string url) => 
             GrpcChannel.ForAddress(url, new GrpcChannelOptions
@@ -124,7 +125,8 @@ namespace Slik.Cache.Tests
             var runTask = RunInstances(instances, GrpcTestProjectPath, n =>
             {
                 string path = Path.Combine(Directory.GetCurrentDirectory(), $"{startPort + n}");
-                return $"--port={startPort + n} --folder=\"{path}\"";
+                string memberList = $"{string.Join(",", Enumerable.Range(startPort, instances).Select(port => $"localhost:{port}")) }";
+                return $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberList}\"";
             }, cts.Token);
 
             await Task.Delay(1000);
