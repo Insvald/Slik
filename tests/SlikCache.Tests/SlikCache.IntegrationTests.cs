@@ -1,5 +1,4 @@
 ﻿using Grpc.Net.Client;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ProtoBuf.Grpc.Client;
 using Slik.Cache.Grpc;
@@ -18,11 +17,9 @@ namespace Slik.Cache.Tests
     public class SlikCacheIntegrationTests
     {
 #if DEBUG
-        private const string InProceNodeProjectPath = "..\\..\\..\\..\\..\\examples\\SlikNode\\bin\\Debug\\net6.0\\SlikNode.exe";
-        private const string GrpcTestProjectPath = "..\\..\\..\\..\\..\\examples\\SlikGrpcNode\\bin\\Debug\\net6.0\\SlikGrpcNode.exe";
+        private const string TestProjectPath = "..\\..\\..\\..\\..\\examples\\SlikNode\\bin\\Debug\\net6.0\\SlikNode.exe";
 #else
-        private const string InProceNodeProjectPath = "..\\..\\..\\..\\..\\examples\\SlikNode\\bin\\Release\\net6.0\\SlikNode.exe";
-        private const string GrpcTestProjectPath = "..\\..\\..\\..\\..\\examples\\SlikGrpcNode\\bin\\Release\\net6.0\\SlikGrpcNode.exe";
+        private const string TestProjectPath = "..\\..\\..\\..\\..\\examples\\SlikNode\\bin\\Release\\net6.0\\SlikNode.exe";
 #endif
 
         private static Task RunInstances(int instanceCount, string executable, Func<int, string>? arguments = null, CancellationToken token = default)
@@ -67,11 +64,11 @@ namespace Slik.Cache.Tests
             
             cts.CancelAfter(TimeSpan.FromSeconds(7));
                 
-            await RunInstances(instances, InProceNodeProjectPath, n =>
+            await RunInstances(instances, TestProjectPath, n =>
             {
                 string path = Path.Combine(Directory.GetCurrentDirectory(), $"{startPort + n}");
                 string memberList = $"{string.Join(",", Enumerable.Range(startPort, instances).Select(port => $"localhost:{port}")) }";
-                return $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberList}\"";
+                return $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberList}\" --testCache=true";
             }, cts.Token);
 
             // collect logs and compare history from each node
@@ -122,11 +119,11 @@ namespace Slik.Cache.Tests
 
             using var cts = new CancellationTokenSource();
 
-            var runTask = RunInstances(instances, GrpcTestProjectPath, n =>
+            var runTask = RunInstances(instances, TestProjectPath, n =>
             {
                 string path = Path.Combine(Directory.GetCurrentDirectory(), $"{startPort + n}");
                 string memberList = $"{string.Join(",", Enumerable.Range(startPort, instances).Select(port => $"localhost:{port}")) }";
-                return $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberList}\"";
+                return $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberList}\" --api=true";
             }, cts.Token);
 
             await Task.Delay(1000);

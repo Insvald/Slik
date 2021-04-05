@@ -17,7 +17,7 @@ namespace Slik.Node
 {
     internal sealed class Startup
     {
-        public async Task<int> StartHostAsync(int port, string members, string? folder)
+        public async Task<int> StartHostAsync(int port, string members, string? folder, bool enableGrpcApi, bool enableConsumer)
         {
             folder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Slik");
 
@@ -40,8 +40,12 @@ namespace Slik.Node
                     .CreateDefaultBuilder()
                     .UseSerilog(logger)
                     .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(internalConfig))
-                    .ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureServices(services => services.AddHostedService<CacheConsumer>()))
-                    .UseSlik()
+                    .ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureServices(services =>
+                    {
+                        if (enableConsumer)
+                            services.AddHostedService<CacheConsumer>();
+                    }))
+                    .UseSlik(enableGrpcApi)
                     .Build()
                     .RunAsync();
 
