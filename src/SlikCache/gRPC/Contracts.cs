@@ -30,7 +30,32 @@ namespace Slik.Cache.Grpc
         public byte[] Value { get; set; } = Array.Empty<byte>();
 
         [DataMember(Order = 3)]
-        public DistributedCacheEntryOptions Options { get; set; } = new();
+        public SetRequestOptions Options { get; set; } = new();
+    }
+
+    // wrapper for DistributedCacheEntryOptions
+    [DataContract]
+    public class SetRequestOptions
+    {
+        public DateTime? AbsoluteExpiration { get; set; }
+        public TimeSpan? AbsoluteExpirationRelativeToNow { get; set; }
+        public TimeSpan? SlidingExpiration { get; set; }
+
+        public DistributedCacheEntryOptions ToDistributedCacheEntryOptions() =>        
+            new() 
+            {
+                AbsoluteExpiration = AbsoluteExpiration,
+                AbsoluteExpirationRelativeToNow = AbsoluteExpirationRelativeToNow,
+                SlidingExpiration = SlidingExpiration
+            };
+
+        public static SetRequestOptions FromDistributedCacheEntryOptions(DistributedCacheEntryOptions options) =>
+            new()
+            {
+                AbsoluteExpiration = options.AbsoluteExpiration?.DateTime,
+                AbsoluteExpirationRelativeToNow = options.AbsoluteExpirationRelativeToNow,
+                SlidingExpiration = options.SlidingExpiration
+            };
     }
 
     [ServiceContract(Name = "SlikCache")]

@@ -37,7 +37,6 @@ try
         .UseSerilog(logger)
         .ConfigureAppConfiguration(builder => builder.AddJsonFile("appsettings.json").AddInMemoryCollection(new[] 
         {
-            //new KeyValuePair<string, string>("protocolVersion", "http2"),
             new KeyValuePair<string, string>("cacheLogLocation", cacheFolder),            
             new KeyValuePair<string, string>("folder", dataFolder) // in case it has been changed
         }))

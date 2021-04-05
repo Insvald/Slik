@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -7,9 +8,9 @@ namespace Slik.Cache.Grpc
     public class SlikCacheGrpcService : ISlikCacheService
     {
         private readonly ILogger<SlikCacheGrpcService> _logger;
-        private readonly SlikCache _cache;
+        private readonly IDistributedCache _cache;
                         
-        internal SlikCacheGrpcService(ILogger<SlikCacheGrpcService> logger, SlikCache cache)
+        public SlikCacheGrpcService(ILogger<SlikCacheGrpcService> logger, IDistributedCache cache)
         {
             _logger = logger;
             _cache = cache;
@@ -50,7 +51,7 @@ namespace Slik.Cache.Grpc
         public async Task Set(SetRequest request)
         {
             LogCallEntrance();
-            await _cache.SetAsync(request.Key, request.Value, request.Options).ConfigureAwait(false);
+            await _cache.SetAsync(request.Key, request.Value, request.Options.ToDistributedCacheEntryOptions()).ConfigureAwait(false);
             LogCallExit();
         }
     }

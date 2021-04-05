@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{D1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikCache.Tests", "tests\SlikCache.Tests\SlikCache.Tests.csproj", "{2C97FD04-CFFC-4C10-A9D6-690A6C7EC34F}"
 	ProjectSection(ProjectDependencies) = postProject
+		{827E0484-15A6-4F59-918D-D8AC19480DA8} = {827E0484-15A6-4F59-918D-D8AC19480DA8}
 		{E586B3F2-3681-4634-A14D-1B205C7A06B9} = {E586B3F2-3681-4634-A14D-1B205C7A06B9}
 	EndProjectSection
 EndProject

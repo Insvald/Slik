@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Slik.Cache;
@@ -26,7 +27,7 @@ string logsFolder = Path.Combine(dataFolder, "Logs");
 string cacheFolder = Path.Combine(dataFolder, "Cache");
 
 using var logger = Slik.GrpcNode.Startup.SetupSerilog(logsFolder);
-logger.Information($"Slik Node v{Assembly.GetExecutingAssembly().GetName().Version}. Listening on port {port}");
+logger.Information($"Slik gRPC Node v{Assembly.GetExecutingAssembly().GetName().Version}. Listening on port {port}");
 
 try
 {
@@ -36,10 +37,11 @@ try
         .ConfigureAppConfiguration(builder => builder.AddJsonFile("appsettings.json").AddInMemoryCollection(new[] 
         { 
             new KeyValuePair<string, string>("cacheLogLocation", cacheFolder),
-            new KeyValuePair<string, string>("protocolVersion", "http2"), // TODO check if required       
+            //new KeyValuePair<string, string>("protocolVersion", "http2"), 
             new KeyValuePair<string, string>("folder", dataFolder) // in case it has been changed
         }))
-        .UseSlik(externalApi: true)
+        .ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureServices(services => services.AddHostedService<CacheConsumer>()))
+        .UseSlik(enableGrpcApi: true)
         .Build()
         .RunAsync();
 }

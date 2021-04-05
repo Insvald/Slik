@@ -1,16 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
-
     <RootNamespace>Slik.Cache.Tests</RootNamespace>
-
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup>    
+    <PackageReference Include="Grpc.Net.Client" Version="2.*" />    
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.*" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.*" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.*" />
@@ -19,6 +18,7 @@
     <PackageReference Include="MSTest.TestAdapter" Version="2.*" />
     <PackageReference Include="MSTest.TestFramework" Version="2.*" />
     <PackageReference Include="coverlet.collector" Version="1.*" />
+    <PackageReference Include="protobuf-net.Grpc" Version="1.*" />
   </ItemGroup>
 
   <ItemGroup>
