@@ -4,8 +4,10 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,22 +28,20 @@ namespace Slik.Cache
         private readonly NamedLockFactory _lockFactory = new();
         private Guid _recordBeingAppendedLocally;
         private readonly ILoggerFactory _loggerFactory;
-
-        public const string LogLocationConfiguration = "cacheLogLocation";
-
+        
         public TimeSpan CommitTimeout { get; set; } = TimeSpan.FromSeconds(10);
         public string LogLocation { get; }
 
         #region PersistentState implementation
 
-        public SlikCache(IConfiguration configuration, ILoggerFactory loggerFactory) : base(
-            path: configuration[LogLocationConfiguration],
-            recordsPerPartition: 50,
-            configuration: null)
+        public SlikCache(IOptions<SlikOptions> options, ILoggerFactory loggerFactory) : base(
+            path: options.Value.DataFolder,
+            recordsPerPartition: options.Value.RecordsPerPartition,
+            configuration: options.Value.PersistentStateOptions)
         {
             _loggerFactory = loggerFactory;
             _logger = _loggerFactory.CreateLogger<SlikCache>();
-            LogLocation = configuration[LogLocationConfiguration];
+            LogLocation = options.Value.DataFolder;
             _internalCache = new MemoryDistributedCache(Microsoft.Extensions.Options.Options.Create(new MemoryDistributedCacheOptions()), loggerFactory);            
         }
 

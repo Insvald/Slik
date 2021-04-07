@@ -22,16 +22,19 @@ namespace Slik.Cache.Tests
         private const string TestProjectPath = "..\\..\\..\\..\\..\\examples\\SlikNode\\bin\\Release\\net6.0\\SlikNode.exe";
 #endif
 
-        private static Task RunInstances(int instanceCount, string executable, Func<int, string>? arguments = null, CancellationToken token = default)
+        private static Task RunInstances(int instanceCount, string executable, int startPort, string? arguments = null, CancellationToken token = default)
         {
             List<Process> processList = new();
 
             for (int n = 0; n < instanceCount; n++)
             {
+                string path = Path.Combine(Directory.GetCurrentDirectory(), $"{startPort + n}");
+                string memberList = $"{string.Join(",", Enumerable.Range(startPort, instanceCount).Select(port => $"localhost:{port}")) }";
+
                 var newProcess = Process.Start(new ProcessStartInfo
                 {
                     FileName = executable,
-                    Arguments = arguments?.Invoke(n) ?? string.Empty,
+                    Arguments = $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberList}\" {arguments}",
                     CreateNoWindow = true,
                     WorkingDirectory = Path.GetDirectoryName(executable) ?? string.Empty
                 })
@@ -54,22 +57,16 @@ namespace Slik.Cache.Tests
         }
 
         [TestMethod]
-        //[Ignore]
         public async Task Cluster_Consensus_HappyPath()
         {
             int instances = 3;
-            int startPort = 3262;
+            int startPort = SlikOptions.DefaultPort;
 
             using var cts = new CancellationTokenSource();
-            
+
             cts.CancelAfter(TimeSpan.FromSeconds(7));
-                
-            await RunInstances(instances, TestProjectPath, n =>
-            {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), $"{startPort + n}");
-                string memberList = $"{string.Join(",", Enumerable.Range(startPort, instances).Select(port => $"localhost:{port}")) }";
-                return $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberList}\" --testCache=true";
-            }, cts.Token);
+
+            await RunInstances(instances, TestProjectPath, startPort, "--testCache=true", cts.Token);
 
             // collect logs and compare history from each node
             List<string[]> history = new();
@@ -98,56 +95,57 @@ namespace Slik.Cache.Tests
                     line += $"{(history[n].Length > i ? history[n][i] : "")}\t";
 
                 Console.WriteLine(line);
-            }            
+            }
         }
 
         private static readonly HttpMessageHandler _httpHandler = new RaftClientHandlerFactory().CreateHandler("");
 
-        private GrpcChannel GetChannel(string url) => 
-            GrpcChannel.ForAddress(url, new GrpcChannelOptions
+        private static async ValueTask<T> UseGrpcService<T>(int port, Func<ISlikCacheService, ValueTask<T>> useFunction)
+        {
+            using var channel = GrpcChannel.ForAddress($"https://localhost:{port}", new GrpcChannelOptions
             {
                 HttpHandler = _httpHandler
             });
-        
+
+            var service = channel.CreateGrpcService<ISlikCacheService>();
+
+            return await useFunction(service);
+        }
+
+        private static async Task UseGrpcService(int port, Func<ISlikCacheService, Task> useAction) =>
+            await UseGrpcService(port, async service => { await useAction(service); return true; });
 
         [TestMethod]
-        public async Task Set_Value_GetsReplicated()
+        public async Task SetAndRemove_GetReplicated()
         {
             int instances = 3;
-            int startPort = 3262;
+            int startPort = SlikOptions.DefaultPort;
             var expectedValue = new byte[] { 1, 2, 3 };
 
             using var cts = new CancellationTokenSource();
 
-            var runTask = RunInstances(instances, TestProjectPath, n =>
-            {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), $"{startPort + n}");
-                string memberList = $"{string.Join(",", Enumerable.Range(startPort, instances).Select(port => $"localhost:{port}")) }";
-                return $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberList}\" --api=true";
-            }, cts.Token);
+            var runTask = RunInstances(instances, TestProjectPath, startPort, "--api=true", cts.Token);
 
-            await Task.Delay(1000);
+            await Task.Delay(500);
 
             try
             {
-                {
-                    using var channel = GetChannel($"https://localhost:{startPort}");
-                    var service = channel.CreateGrpcService<ISlikCacheService>();
-                    await service.Set(new SetRequest { Key = "key", Value = expectedValue });
-                }
+                await UseGrpcService(startPort, service => service.Set(new SetRequest { Key = "key", Value = expectedValue }));
 
+                // checking set
+                for (int port = startPort; port < startPort + instances; port++)
                 {
-                    using var channel = GetChannel($"https://localhost:{startPort + 1}");
-                    var service = channel.CreateGrpcService<ISlikCacheService>();
-                    var result = await service.Get(new KeyRequest { Key = "key" });
+                    var result = await UseGrpcService(port, service => service.Get(new KeyRequest { Key = "key" }));
                     Assert.IsTrue(expectedValue.SequenceEqual(result.Value));
                 }
 
+                await UseGrpcService(startPort, service => service.Remove(new KeyRequest { Key = "key" }));
+
+                // checking remove
+                for (int port = startPort; port < startPort + instances; port++)
                 {
-                    using var channel = GetChannel($"https://localhost:{startPort + 2}");
-                    var service = channel.CreateGrpcService<ISlikCacheService>();
-                    var result = await service.Get(new KeyRequest { Key = "key" });
-                    Assert.IsTrue(expectedValue.SequenceEqual(result.Value));
+                    var result = await UseGrpcService(port, service => service.Get(new KeyRequest { Key = "key" }));
+                    Assert.IsTrue(result.Value.Length == 0);
                 }
             }
             finally

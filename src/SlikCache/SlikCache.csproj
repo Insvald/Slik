@@ -5,6 +5,17 @@
     <RootNamespace>Slik.Cache</RootNamespace>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
+    <Authors>Ilya Rovensky</Authors>
+    <Product>Slik</Product>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IsPackable>true</IsPackable>
+    <PackageId>Slik.Cache</PackageId>
+    <Description>Distributed cache using Raft protocol with gRPC API</Description>
+    <PackageTags>Distributed;Cache;Raft;gRPC</PackageTags>
+    <PackageProjectUrl>https://github.com/Insvald/Slik</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Insvald/Slik</RepositoryUrl>
+    <Copyright>Copyright © 2021 Ilya Rovensky</Copyright>
   </PropertyGroup>
   
   <ItemGroup>    

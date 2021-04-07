@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using System;
-using System.Linq;
 
 namespace Slik.Cache
 {

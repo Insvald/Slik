@@ -6,7 +6,7 @@ await Parser
     .Default
     .ParseArguments<CommandLineOptions>(args)
     .MapResult(
-        async (CommandLineOptions opts) => await new Startup().StartHostAsync(opts.Port, opts.Members, opts.Folder, opts.EnableGrpcApi, opts.EnableConsumer),
+        async (CommandLineOptions opts) => await Startup.StartHostAsync(opts.Port, opts.Members, opts.Folder, opts.EnableGrpcApi, opts.EnableConsumer),
         errs =>Task.FromResult(-1)); 
 
 public class CommandLineOptions

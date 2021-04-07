@@ -5,11 +5,13 @@
     <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>Slik.Node</RootNamespace>
     <Nullable>enable</Nullable>
-    <Version>0.0.1</Version>
+    <Version>1.0.0</Version>
     <Authors>Ilya Rovensky</Authors>
     <Product>Slik</Product>
     <Description>Lightweight in-process distributed cache based on Raft consensus protocol</Description>
     <Copyright>(c) 2021 Ilya Rovensky</Copyright>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>

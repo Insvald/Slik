@@ -1,8 +1,6 @@
-﻿using DotNext.Net.Cluster.Consensus.Raft;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Slik.Cache.Tests
@@ -15,12 +13,12 @@ namespace Slik.Cache.Tests
             if (string.IsNullOrEmpty(path))
                 path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
-            var cacheConfigration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string> { { SlikCache.LogLocationConfiguration, path } })
-                .Build();
-
             using var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-            return new SlikCache(cacheConfigration, loggerFactory); // without SlikRouter it is in offline mode
+
+            var optionsMock = new Mock<IOptions<SlikOptions>>();
+            optionsMock.SetupGet(o => o.Value).Returns(new SlikOptions { DataFolder = path });
+            
+            return new SlikCache(optionsMock.Object, loggerFactory); // without SlikRouter it is in offline mode
         }
 
         public static void DestroyCache(SlikCache cache)

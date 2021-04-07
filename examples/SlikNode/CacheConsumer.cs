@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Slik.Cache;
 using System;
 using System.IO;
 using System.Threading;
@@ -20,11 +21,11 @@ namespace Slik.Node
         private readonly Random _rnd = new();
         private readonly string _historyFileName;
 
-        public CacheConsumer(IDistributedCache cache, ILogger<CacheConsumer> logger, IConfiguration config)
+        public CacheConsumer(IDistributedCache cache, ILogger<CacheConsumer> logger, IOptions<SlikOptions> options)
         {
             _cache = cache;
             _logger = logger;
-            _historyFileName = Path.Combine(config["folder"], "history.txt");
+            _historyFileName = Path.Combine(options.Value.DataFolder, "history.txt");
             File.Delete(_historyFileName);
             _workerTask = WorkerAsync(_stoppingCts.Token);
         }
