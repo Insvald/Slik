@@ -1,4 +1,4 @@
-# SlikCache
+# Slik.Cache
 Distributed In-process Cache in C# / Net 6.0 with external gRPC API (HTTP/2, client/server certificates)
 
 Based on a [magnificent dotNext library](https://github.com/sakno/dotNext) and its Raft cluster implementation. 
@@ -43,3 +43,7 @@ SlikNode --port=3092 --folder="node 1" --members=localhost:3092,localhost:3093,l
 SlikNode --port=3093 --folder="node 2" --members=localhost:3092,localhost:3093,localhost:3094
 SlikNode --port=3094 --folder="node 3" --members=localhost:3092,localhost:3093,localhost:3094
 ```
+## Roadmap
+* Self-signed certificates generation
+* Docker compose for starting cluster in containers
+* Support adding/removing of cluster members in runtime
