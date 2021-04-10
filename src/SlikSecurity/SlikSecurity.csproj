@@ -4,6 +4,22 @@
     <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>Slik.Security</RootNamespace>
     <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+    <Authors>Ilya Rovensky</Authors>
+    <Product>Slik</Product>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IsPackable>true</IsPackable>
+    <PackageId>Slik.Security</PackageId>
+    <Description>Certificate-based security for HTTP/2</Description>
+    <PackageTags>Certificate;TLS;Self signed;gRPC;HTTP/2;https</PackageTags>
+    <PackageProjectUrl>https://github.com/Insvald/Slik</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Insvald/Slik</RepositoryUrl>
+    <Copyright>Copyright © 2021 Ilya Rovensky</Copyright>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
