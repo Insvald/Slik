@@ -1,4 +1,5 @@
 ﻿using DotNext.Net.Cluster.Consensus.Raft;
+using Slik.Security;
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
@@ -15,44 +16,8 @@ namespace Slik.Cache
         public string DataFolder { get; set; } = "";
         public bool EnableGrpcApi { get; set; }
         public int RecordsPerPartition { get; set; } = 50;
-
-        internal PersistentState.Options PersistentStateOptions = new();
-
-        public int BufferSize 
-        {
-            get => PersistentStateOptions.BufferSize;
-            set => PersistentStateOptions.BufferSize = value;
-        }
-
-        public long InitialPartitionSize 
-        { 
-            get => PersistentStateOptions.InitialPartitionSize; 
-            set => PersistentStateOptions.InitialPartitionSize = value; 
-        }
-
-        public bool UseCaching 
-        { 
-            get => PersistentStateOptions.UseCaching;  
-            set => PersistentStateOptions.UseCaching = value; 
-        }
-
-        public int MaxConcurrentReads 
-        { 
-            get => PersistentStateOptions.MaxConcurrentReads; 
-            set => PersistentStateOptions.MaxConcurrentReads = value; 
-        }
-
-        public bool ReplayOnInitialize 
-        { 
-            get => PersistentStateOptions.ReplayOnInitialize; 
-            set => PersistentStateOptions.ReplayOnInitialize = value; 
-        }
-
-        public CompressionLevel BackupCompression 
-        { 
-            get => PersistentStateOptions.BackupCompression;
-            set => PersistentStateOptions.BackupCompression = value; 
-        }
+        public CertificateOptions CertificateOptions { get; set; } = new();        
+        public PersistentState.Options PersistentStateOptions { get; set; } = new();
 
         public void CopyTo(SlikOptions options)
         {
@@ -62,6 +27,7 @@ namespace Slik.Cache
             options.EnableGrpcApi = EnableGrpcApi;
             options.RecordsPerPartition = RecordsPerPartition;
             options.PersistentStateOptions = PersistentStateOptions;
+            options.CertificateOptions = CertificateOptions;
         }
     }
 }

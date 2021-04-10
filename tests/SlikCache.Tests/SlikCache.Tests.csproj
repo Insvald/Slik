@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\examples\SlikNode\SlikNode.csproj" />
     <ProjectReference Include="..\..\src\SlikCache\SlikCache.csproj" />
   </ItemGroup>
 

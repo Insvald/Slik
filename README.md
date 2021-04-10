@@ -35,7 +35,7 @@ public class CacheConsumer
 ```
 Update any node, updates are redirected to a cluster leader, and are replicated automatically to each node.
 
-## Sample project: [examples/SlikNode](https://github.com/Insvald/Slik/tree/master/examples/SlikNode).
+## Sample project: [examples/SlikNode](https://github.com/Insvald/Slik/tree/master/examples/SlikNode)
 
 How to run a minimal cluster: 
 ```

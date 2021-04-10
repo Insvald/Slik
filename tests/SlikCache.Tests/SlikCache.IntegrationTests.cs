@@ -1,20 +1,25 @@
 ﻿using Grpc.Net.Client;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using ProtoBuf.Grpc.Client;
-using Slik.Cache.Grpc;
+using Slik.Cache.Grpc.V1;
+using Slik.Security;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Slik.Cache.Tests
 {
     [TestClass]
-    public class SlikCacheIntegrationTests
+    public class SilkCacheIntegrationTests
     {
 #if DEBUG
         private const string TestProjectPath = "..\\..\\..\\..\\..\\examples\\SlikNode\\bin\\Debug\\net6.0\\SlikNode.exe";
@@ -22,7 +27,31 @@ namespace Slik.Cache.Tests
         private const string TestProjectPath = "..\\..\\..\\..\\..\\examples\\SlikNode\\bin\\Release\\net6.0\\SlikNode.exe";
 #endif
 
-        private static Task RunInstances(int instanceCount, string executable, int startPort, string? arguments = null, CancellationToken token = default)
+        private static readonly HttpMessageHandler _httpHandler;
+        private static readonly X509Certificate2 _certificate;
+
+        [ClassCleanup]
+        public static void Cleanup()
+        {
+            _httpHandler.Dispose();
+            _certificate.Dispose();
+        }
+
+        static SilkCacheIntegrationTests()
+        {
+            _certificate = Node.Startup.LoadCertificate("node.pfx");
+
+            var certifierMock = new Mock<ICommunicationCertifier>();
+            certifierMock.Setup(c => c.SetupClient(It.IsAny<SslClientAuthenticationOptions>())).Callback<SslClientAuthenticationOptions>(opt =>
+            {
+                opt.ClientCertificates = new(new[] { _certificate });
+                opt.RemoteCertificateValidationCallback = (_, __, ___, ____) => true;
+            });
+
+            _httpHandler = new RaftClientHandlerFactory(certifierMock.Object).CreateHandler("");
+        }
+
+        private Task RunInstances(int instanceCount, string executable, int startPort, string? arguments = null, CancellationToken token = default)
         {
             List<Process> processList = new();
 
@@ -98,9 +127,7 @@ namespace Slik.Cache.Tests
             }
         }
 
-        private static readonly HttpMessageHandler _httpHandler = new RaftClientHandlerFactory().CreateHandler("");
-
-        private static async ValueTask<T> UseGrpcService<T>(int port, Func<ISlikCacheService, ValueTask<T>> useFunction)
+        private async ValueTask<T> UseGrpcService<T>(int port, Func<ISlikCacheService, ValueTask<T>> useFunction)
         {
             using var channel = GrpcChannel.ForAddress($"https://localhost:{port}", new GrpcChannelOptions
             {
@@ -112,7 +139,7 @@ namespace Slik.Cache.Tests
             return await useFunction(service);
         }
 
-        private static async Task UseGrpcService(int port, Func<ISlikCacheService, Task> useAction) =>
+        private async Task UseGrpcService(int port, Func<ISlikCacheService, Task> useAction) =>
             await UseGrpcService(port, async service => { await useAction(service); return true; });
 
         [TestMethod]
@@ -132,6 +159,8 @@ namespace Slik.Cache.Tests
             {
                 await UseGrpcService(startPort, service => service.Set(new SetRequest { Key = "key", Value = expectedValue }));
 
+                await Task.Delay(500);
+
                 // checking set
                 for (int port = startPort; port < startPort + instances; port++)
                 {
@@ -140,6 +169,8 @@ namespace Slik.Cache.Tests
                 }
 
                 await UseGrpcService(startPort, service => service.Remove(new KeyRequest { Key = "key" }));
+
+                await Task.Delay(500);
 
                 // checking remove
                 for (int port = startPort; port < startPort + instances; port++)

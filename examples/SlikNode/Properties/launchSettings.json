@@ -2,7 +2,7 @@
   "profiles": {
     "SlikNode": {
       "commandName": "Project",
-      "commandLineArgs": "--port=3262 --members=localhost:3262,localhost:3263,localhost:3264",
+      "commandLineArgs": "--port=3262 --members=localhost:3262,localhost:3263,localhost:3264 --create-ssc",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

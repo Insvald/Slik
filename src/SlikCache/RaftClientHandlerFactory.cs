@@ -1,32 +1,23 @@
-﻿using System;
+﻿using Slik.Security;
+using System;
 using System.Net.Http;
-using System.Net.Security;
 
 namespace Slik.Cache
 {
     // https://sakno.github.io/dotNext/features/cluster/aspnetcore.html
     internal sealed class RaftClientHandlerFactory : IHttpMessageHandlerFactory
     {
-        private readonly Action<SslClientAuthenticationOptions>? _optionsSetter;
+        private readonly ICommunicationCertifier _certifier;
 
-        public RaftClientHandlerFactory(Action<SslClientAuthenticationOptions>? optionsSetter = null)
+        public RaftClientHandlerFactory(ICommunicationCertifier certifier)
         {
-            _optionsSetter = optionsSetter;
+            _certifier = certifier;
         }
 
         public HttpMessageHandler CreateHandler(string name)
         {
             var handler = new SocketsHttpHandler { ConnectTimeout = TimeSpan.FromMilliseconds(100) };
-
-            if (_optionsSetter != null)
-            {
-                _optionsSetter(handler.SslOptions);
-            }
-            else
-            {
-                handler.SslOptions.RemoteCertificateValidationCallback = (_, __, ___, ____) => true;
-            }
-
+            _certifier.SetupClient(handler.SslOptions);
             return handler;
         }
     }

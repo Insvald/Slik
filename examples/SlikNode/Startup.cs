@@ -1,46 +1,96 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using CommandLine;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using Slik.Cache;
+using Slik.Security;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
+[assembly: InternalsVisibleTo("SlikCache.Tests")]
 namespace Slik.Node
 {
     internal static class Startup
     {
-        public static async Task<int> StartHostAsync(int port, string members, string? dataFolder, bool enableGrpcApi, bool enableConsumer)
+        internal class CommandLineOptions
         {
-            dataFolder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Slik");
+            [Option(shortName: 'p', longName: "port", Required = true, HelpText = "Port to use for the local instance.")]
+            public ushort Port { get; set; }
 
-            using var logger = CreateLogger(Path.Combine(dataFolder, "Logs"));
+            [Option(shortName: 'm', longName: "members", Required = true, HelpText = "List of cluster members.")]
+            public string Members { get; set; } = "";
 
-            logger.Information($"Slik Node v{Assembly.GetExecutingAssembly().GetName().Version}. Listening on port {port}");
-            
+            [Option(shortName: 'f', longName: "folder", Required = false, HelpText = "Folder for cache data.", Default = null)]
+            public string? Folder { get; set; }
+
+            [Option(shortName: 'a', longName: "api", Required = false, HelpText = "Enable external gRPC API", Default = false)]
+            public bool EnableGrpcApi { get; set; }
+
+            [Option(shortName: 't', longName: "testCache", Required = false, HelpText = "Enable test cache consumer", Default = false)]
+            public bool EnableConsumer { get; set; }
+
+            [Option(shortName: 'c', longName: "create-ssc", Required = false, HelpText = "Create custom self-signed certificate and place it in a certificate store for later usage", Default = false)]
+            public bool CreateSelfSignedCertificate { get; set; }
+
+            [Option(shortName: 'u', longName: "use-ssc", Required = false, HelpText = "Use existing custom self-signed certificate from a certificate store", Default = false)]
+            public bool UseSelfSignedCertificate { get; set; }
+        }
+
+        public static async Task<int> StartHostAsync(CommandLineOptions options)
+        {
+            options.Folder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Slik");
+
+            using var logger = CreateLogger(Path.Combine(options.Folder, "Logs"));
+
+            logger.Information($"Slik Node v{Assembly.GetExecutingAssembly().GetName().Version}. Listening on port {options.Port}");
+
+            X509Certificate2? nodeCertificate = null;
+
             try
             {
+                var certificateOptions = new CertificateOptions();                
+
+                if (options.CreateSelfSignedCertificate)
+                {
+                    certificateOptions.SelfSignedUsage = SelfSignedUsage.Create;
+                }
+                else if (options.UseSelfSignedCertificate)
+                {
+                    certificateOptions.SelfSignedUsage = SelfSignedUsage.Use;
+                }
+                else
+                {
+                    certificateOptions.SelfSignedUsage = SelfSignedUsage.None;
+                    nodeCertificate = LoadCertificate("node.pfx");                    
+                    certificateOptions.ClientCertificate = nodeCertificate;
+                    certificateOptions.ServerCertificate = nodeCertificate;
+                }
+                
                 await Host
                     .CreateDefaultBuilder()
                     .UseSerilog(logger)
                     .ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureServices(services =>
                     {
-                        if (enableConsumer)
+                        if (options.EnableConsumer)
                             services.AddHostedService<CacheConsumer>();
                     }))
                     .UseSlik(new SlikOptions 
                     { 
-                        Host = new IPEndPoint(IPAddress.Loopback, port),
-                        Members = AddClusterMembers(members),
-                        EnableGrpcApi = enableGrpcApi,
-                        DataFolder = dataFolder
+                        Host = new IPEndPoint(IPAddress.Loopback, options.Port),
+                        Members = AddClusterMembers(options.Members),
+                        EnableGrpcApi = options.EnableGrpcApi,
+                        DataFolder = options.Folder,
+                        CertificateOptions = certificateOptions
                     })
                     .Build()
                     .RunAsync();
@@ -52,6 +102,21 @@ namespace Slik.Node
                 logger.Fatal(ex, $"Fatal error occured: {ex.Message}. The node is closing.");
                 return -1;
             }
+            finally
+            {
+                nodeCertificate?.Dispose();
+            }
+        }
+
+        internal static X509Certificate2 LoadCertificate(string certificateName)
+        {
+            using var rawCertificate = Assembly.GetExecutingAssembly().GetManifestResourceStream(typeof(Startup), certificateName);
+            
+            var memoryStream = new MemoryStream(1024);
+            rawCertificate?.CopyTo(memoryStream);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            return new X509Certificate2(memoryStream.ToArray(), "1234");
         }
 
         private static Logger CreateLogger(string pathForLogs) =>        

@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Threading.Tasks;
 
-namespace Slik.Cache.Grpc
+namespace Slik.Cache.Grpc.V1
 {
     [DataContract]
     public class KeyRequest

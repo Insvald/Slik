@@ -16,6 +16,10 @@
     <PackageProjectUrl>https://github.com/Insvald/Slik</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Insvald/Slik</RepositoryUrl>
     <Copyright>Copyright © 2021 Ilya Rovensky</Copyright>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+    <Version>1.1.0</Version>
   </PropertyGroup>
   
   <ItemGroup>    
@@ -27,6 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="node.pfx" />
+    <ProjectReference Include="..\SlikSecurity\SlikSecurity.csproj" />
   </ItemGroup>
 </Project>

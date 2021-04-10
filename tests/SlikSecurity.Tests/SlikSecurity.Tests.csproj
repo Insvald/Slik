@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Slik.Security.Tests</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.*" />
+    <PackageReference Include="Moq" Version="4.*" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.*" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.*" />
+    <PackageReference Include="coverlet.collector" Version="1.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SlikSecurity\SlikSecurity.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Slik.Cache.Grpc
+namespace Slik.Cache.Grpc.V1
 {
     public class SlikCacheGrpcService : ISlikCacheService
     {
