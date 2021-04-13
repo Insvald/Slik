@@ -15,7 +15,7 @@ await Host
     .UseSlik(new SlikOptions 
     { 
         Host = new IPEndPoint(IPAddress.Loopback, 3092),
-        Members = "localhost:3092,localhost:3093,localhost:3094"
+        Members = new[] { "localhost:3092", "localhost:3093", "localhost:3094" }
     })
     .Build()
     .RunAsync();
