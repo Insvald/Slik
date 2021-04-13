@@ -1,3 +1,6 @@
+[![The current version of Slik.Cache](https://img.shields.io/github/v/release/Insvald/Slik)](https://github.com/Insvald/Slik)
+[![Slik.Cache uses MIT License](https://img.shields.io/github/license/Insvald/Slik)](https://github.com/Insvald/Slik/blob/master/LICENSE)
+
 # Slik.Cache
 Distributed In-process Cache in C# / Net 6.0 with external gRPC API (HTTP/2, client/server certificates)
 
@@ -43,6 +46,7 @@ SlikNode --port=3092 --folder="node 1" --members=localhost:3092,localhost:3093,l
 SlikNode --port=3093 --folder="node 2" --members=localhost:3092,localhost:3093,localhost:3094
 SlikNode --port=3094 --folder="node 3" --members=localhost:3092,localhost:3093,localhost:3094
 ```
+
 ## Roadmap
 - [x] Self-signed certificates generation
 - [ ] Docker compose for starting cluster in containers
