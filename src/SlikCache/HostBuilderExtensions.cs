@@ -70,10 +70,10 @@ namespace Slik.Cache
                     }))
                 .ConfigureServices(services =>
                 {
-                    if (cacheOptions.CertificateOptions.SelfSignedUsage == SelfSignedUsage.None)
-                        services.AddSingleton<ICommunicationCertifier, CaSignedCertifier>();
-                    else
+                    if (cacheOptions.CertificateOptions.UseSelfSigned)
                         services.AddSingleton<ICommunicationCertifier, SelfSignedCertifier>();
+                    else
+                        services.AddSingleton<ICommunicationCertifier, CaSignedCertifier>();
 
                     services                        
                         .AddTransient<ICertificateGenerator, CertificateGenerator>()

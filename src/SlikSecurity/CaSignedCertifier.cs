@@ -14,7 +14,7 @@ namespace Slik.Security
         public CaSignedCertifier(IOptions<CertificateOptions> options, ILogger<CaSignedCertifier> logger)
             : base(options, logger)
         {
-            if (options.Value.SelfSignedUsage != SelfSignedUsage.None)
+            if (options.Value.UseSelfSigned)
                 throw new Exception("Wrong certifier");
 
             if (options.Value.ServerCertificate == null)

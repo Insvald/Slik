@@ -39,11 +39,8 @@ namespace Slik.Node
             [Option(shortName: 't', longName: "testCache", Required = false, HelpText = "Enable test cache consumer", Default = false)]
             public bool EnableConsumer { get; set; }
 
-            [Option(shortName: 'c', longName: "create-ssc", Required = false, HelpText = "Create custom self-signed certificate and place it in a certificate store for later usage", Default = false)]
-            public bool CreateSelfSignedCertificate { get; set; }
-
-            [Option(shortName: 'u', longName: "use-ssc", Required = false, HelpText = "Use existing custom self-signed certificate from a certificate store", Default = false)]
-            public bool UseSelfSignedCertificate { get; set; }
+            [Option(shortName: 'c', longName: "create-ssc", Required = false, HelpText = "Use custom self-signed certificate", Default = false)]
+            public bool UseSelfSignedCertificates { get; set; }
         }
 
         public static async Task<int> StartHostAsync(CommandLineOptions options)
@@ -58,23 +55,14 @@ namespace Slik.Node
 
             try
             {
-                var certificateOptions = new CertificateOptions();                
+                nodeCertificate = options.UseSelfSignedCertificates ? null : LoadCertificate("node.pfx");
 
-                if (options.CreateSelfSignedCertificate)
+                var certificateOptions = new CertificateOptions
                 {
-                    certificateOptions.SelfSignedUsage = SelfSignedUsage.Create;
-                }
-                else if (options.UseSelfSignedCertificate)
-                {
-                    certificateOptions.SelfSignedUsage = SelfSignedUsage.Use;
-                }
-                else
-                {
-                    certificateOptions.SelfSignedUsage = SelfSignedUsage.None;
-                    nodeCertificate = LoadCertificate("node.pfx");                    
-                    certificateOptions.ClientCertificate = nodeCertificate;
-                    certificateOptions.ServerCertificate = nodeCertificate;
-                }
+                    UseSelfSigned = options.UseSelfSignedCertificates,
+                    ClientCertificate = nodeCertificate,
+                    ServerCertificate = nodeCertificate
+                };
                 
                 await Host
                     .CreateDefaultBuilder()

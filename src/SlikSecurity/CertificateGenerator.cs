@@ -85,12 +85,11 @@ namespace Slik.Security
             {
                 _logger.LogDebug($"Creating exportable non-root certificate '{certificateName}'");
 
-                using (X509Certificate2
-                    intermediate = request.Create(issuerCertificate, DateTimeOffset.UtcNow, issuerCertificate.NotAfter, BitConverter.GetBytes(DateTime.UtcNow.ToBinary())))
-                {
+                using X509Certificate2
+                    intermediate = request.Create(issuerCertificate, DateTimeOffset.UtcNow, issuerCertificate.NotAfter, BitConverter.GetBytes(DateTime.UtcNow.ToBinary()));
+                
                     // attaching the private key
-                    certificateWithKey = intermediate.CopyWithPrivateKey(key);
-                }
+                    certificateWithKey = intermediate.CopyWithPrivateKey(key);                
             }
 
             try

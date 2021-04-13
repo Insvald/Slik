@@ -55,7 +55,7 @@ namespace Slik.Security
                 ? ClientCertificateMode.RequireCertificate
                 : ClientCertificateMode.NoCertificate;
 
-            serverOptions.CheckCertificateRevocation = Options.SelfSignedUsage == SelfSignedUsage.None;
+            serverOptions.CheckCertificateRevocation = !Options.UseSelfSigned;
 
             if (Options.ClientCertificate != null)
             {

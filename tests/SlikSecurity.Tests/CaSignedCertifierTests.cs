@@ -5,33 +5,38 @@ using Moq;
 
 namespace Slik.Security.Tests
 {
-    [TestClass]
-    public class CaSignedCertifierTests : CertifierTestsBase
+    public abstract class CaSignedTestsBase : CertifierTestsBase
     {
-        public CaSignedCertifierTests()
+        protected abstract bool UseClientCertificates { get; }
+
+        protected override CertifierFixture GetFixture(CertificateGenerator generator)
         {
-            using var rootCert = Generator.Generate("test CA root");
-            
-            var options = new CertificateOptions 
-            { 
-                SelfSignedUsage = SelfSignedUsage.None,
-                ServerCertificate = Generator.Generate("test service", rootCert, CertificateAuthentication.Server),
-                ClientCertificate = Generator.Generate("test client", rootCert, CertificateAuthentication.Client)
+            using var rootCert = generator.Generate("test CA root");
+
+            var options = new CertificateOptions
+            {
+                UseSelfSigned = false,
+                ServerCertificate = generator.Generate("test service", rootCert, CertificateAuthentication.Server),
+                ClientCertificate = UseClientCertificates ? generator.Generate("test client", rootCert, CertificateAuthentication.Client) : null
             };
 
-            Certifier = new CaSignedCertifier(Options.Create(options), Mock.Of<ILogger<CaSignedCertifier>>());
-
-            TestServerCertificate = options.ServerCertificate;
-            TestClientCertificate = options.ClientCertificate;
+            return new CertifierFixture(
+                new CaSignedCertifier(Options.Create(options), Mock.Of<ILogger<CaSignedCertifier>>()),
+                options.ServerCertificate,
+                options.ClientCertificate);
         }
-
-        [TestCleanup]
-        public override void Cleanup()
-        {
-            TestServerCertificate?.Dispose();
-            TestClientCertificate?.Dispose();           
-            
-            base.Cleanup();
-        }        
     }
+
+    [TestClass]
+    public class CaSignedWithoutClientCertificatesTests : CaSignedTestsBase
+    {
+        protected override bool UseClientCertificates { get; } = false;
+    }
+
+    [TestClass]
+    public class CaSignedWithClientCertificatesTests : CaSignedTestsBase
+    {
+        protected override bool UseClientCertificates { get; } = true;
+    }
+
 }
