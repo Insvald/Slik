@@ -39,7 +39,7 @@ namespace Slik.Node
             [Option(shortName: 't', longName: "testCache", Required = false, HelpText = "Enable test cache consumer", Default = false)]
             public bool EnableConsumer { get; set; }
 
-            [Option(shortName: 'c', longName: "create-ssc", Required = false, HelpText = "Use custom self-signed certificate", Default = false)]
+            [Option(shortName: 's', longName: "use-self-signed", Required = false, HelpText = "Use self-signed certificates", Default = false)]
             public bool UseSelfSignedCertificates { get; set; }
         }
 
@@ -51,19 +51,10 @@ namespace Slik.Node
 
             logger.Information($"Slik Node v{Assembly.GetExecutingAssembly().GetName().Version}. Listening on port {options.Port}");
 
-            X509Certificate2? nodeCertificate = null;
-
             try
             {
-                nodeCertificate = options.UseSelfSignedCertificates ? null : LoadCertificate("node.pfx");
+                using var nodeCertificate = options.UseSelfSignedCertificates ? null : LoadCertificate("node.pfx");
 
-                var certificateOptions = new CertificateOptions
-                {
-                    UseSelfSigned = options.UseSelfSignedCertificates,
-                    ClientCertificate = nodeCertificate,
-                    ServerCertificate = nodeCertificate
-                };
-                
                 await Host
                     .CreateDefaultBuilder()
                     .UseSerilog(logger)
@@ -78,7 +69,12 @@ namespace Slik.Node
                         Members = AddClusterMembers(options.Members),
                         EnableGrpcApi = options.EnableGrpcApi,
                         DataFolder = options.Folder,
-                        CertificateOptions = certificateOptions
+                        CertificateOptions = new CertificateOptions
+                        {
+                            UseSelfSigned = options.UseSelfSignedCertificates,
+                            ClientCertificate = nodeCertificate,
+                            ServerCertificate = nodeCertificate
+                        }
                     })
                     .Build()
                     .RunAsync();
@@ -89,10 +85,6 @@ namespace Slik.Node
             {
                 logger.Fatal(ex, $"Fatal error occured: {ex.Message}. The node is closing.");
                 return -1;
-            }
-            finally
-            {
-                nodeCertificate?.Dispose();
             }
         }
 
