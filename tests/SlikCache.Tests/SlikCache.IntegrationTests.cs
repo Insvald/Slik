@@ -86,6 +86,7 @@ namespace Slik.Cache.Tests
         }
 
         [TestMethod]
+        [Ignore]
         public async Task Cluster_Consensus_HappyPath()
         {
             int instances = 3;
