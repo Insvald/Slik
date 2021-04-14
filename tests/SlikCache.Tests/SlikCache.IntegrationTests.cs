@@ -51,7 +51,7 @@ namespace Slik.Cache.Tests
             _httpHandler = new RaftClientHandlerFactory(certifierMock.Object).CreateHandler("");
         }
 
-        private Task RunInstances(int instanceCount, string executable, int startPort, string? arguments = null, CancellationToken token = default)
+        private static Task RunInstances(int instanceCount, string executable, int startPort, string? arguments = null, CancellationToken token = default)
         {
             List<Process> processList = new();
 
@@ -127,7 +127,7 @@ namespace Slik.Cache.Tests
             }
         }
 
-        private async ValueTask<T> UseGrpcService<T>(int port, Func<ISlikCacheService, ValueTask<T>> useFunction)
+        private static async ValueTask<T> UseGrpcService<T>(int port, Func<ISlikCacheService, ValueTask<T>> useFunction)
         {
             using var channel = GrpcChannel.ForAddress($"https://localhost:{port}", new GrpcChannelOptions
             {
@@ -139,10 +139,11 @@ namespace Slik.Cache.Tests
             return await useFunction(service);
         }
 
-        private async Task UseGrpcService(int port, Func<ISlikCacheService, Task> useAction) =>
+        private static async Task UseGrpcService(int port, Func<ISlikCacheService, Task> useAction) =>
             await UseGrpcService(port, async service => { await useAction(service); return true; });
 
         [TestMethod]
+        [Ignore]
         public async Task SetAndRemove_GetReplicated()
         {
             int instances = 3;

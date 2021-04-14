@@ -1,8 +1,6 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+EXPOSE 3092
 WORKDIR /app
-EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
@@ -19,4 +17,5 @@ RUN dotnet publish "SlikNode.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "SlikNode.dll"]
+
+ENTRYPOINT ["dotnet", "SlikNode.dll", "--port=3092", "--members=localhost:3092,localhost:3093,localhost:3094", "--api=true"]
