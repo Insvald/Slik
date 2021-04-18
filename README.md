@@ -10,7 +10,7 @@ Based on a [magnificent dotNext library](https://github.com/sakno/dotNext) and i
 
 Implements [IDistributedCache](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.distributed.idistributedcache), a standard interface for .Net Core cache.
 
-Simple initialization in `Main()`:
+Simple initialization:
 ```C#
 await Host
     .CreateDefaultBuilder()
@@ -51,5 +51,7 @@ SlikNode --port=3094 --folder="node 3" --members=localhost:3092,localhost:3093,l
 
 ## Roadmap
 - [x] Self-signed certificates generation
+- [x] Support adding of cluster members in runtime
+- [ ] Support removing of cluster members in runtime
+- [ ] More unit and integration tests to cover adding/removing cluster members
 - [ ] Docker compose for starting cluster in containers
-- [ ] Support adding/removing of cluster members in runtime
