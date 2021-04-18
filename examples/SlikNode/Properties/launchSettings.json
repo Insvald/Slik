@@ -2,7 +2,7 @@
   "profiles": {
     "SlikNode": {
       "commandName": "Project",
-      "commandLineArgs": "--port=3262 --members=localhost:3262,localhost:3263,localhost:3264"
+      "commandLineArgs": "--folder=\"bin\\Debug\\net6.0\\node 1\" --testCache"
     },
     "Docker": {
       "commandName": "Docker"

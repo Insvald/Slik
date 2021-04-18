@@ -24,16 +24,16 @@ namespace Slik.Node
     {
         internal class CommandLineOptions
         {
-            [Option(shortName: 'p', longName: "port", Required = true, HelpText = "Port to use for the local instance.")]
-            public ushort Port { get; set; }
+            [Option(shortName: 'p', longName: "port", Required = false, HelpText = "Port to use for the local instance.", Default = SlikOptions.DefaultPort)]
+            public int Port { get; set; }
 
-            [Option(shortName: 'm', longName: "members", Required = true, HelpText = "List of cluster members.")]
+            [Option(shortName: 'm', longName: "members", Required = false, HelpText = "List of cluster members.")]
             public string Members { get; set; } = "";
 
             [Option(shortName: 'f', longName: "folder", Required = false, HelpText = "Folder for cache data.", Default = null)]
             public string? Folder { get; set; }
 
-            [Option(shortName: 'a', longName: "api", Required = false, HelpText = "Enable external gRPC API", Default = false)]
+            [Option(shortName: 'a', longName: "api", Required = false, HelpText = "Enable external gRPC API. Required for dynamic adding/removing of members.", Default = false)]
             public bool EnableGrpcApi { get; set; }
 
             [Option(shortName: 't', longName: "testCache", Required = false, HelpText = "Enable test cache consumer", Default = false)]
@@ -54,6 +54,7 @@ namespace Slik.Node
             try
             {
                 using var nodeCertificate = options.UseSelfSignedCertificates ? null : LoadCertificate("node.pfx");
+                var host = new IPEndPoint(IPAddress.Loopback, options.Port);
 
                 await Host
                     .CreateDefaultBuilder()
@@ -63,10 +64,10 @@ namespace Slik.Node
                         if (options.EnableConsumer)
                             services.AddHostedService<CacheConsumer>();
                     }))
-                    .UseSlik(new SlikOptions 
-                    { 
-                        Host = new IPEndPoint(IPAddress.Loopback, options.Port),
-                        Members = AddClusterMembers(options.Members),
+                    .UseSlik(new SlikOptions
+                    {
+                        Host = host,
+                        Members = AddClusterMembers(string.IsNullOrEmpty(options.Members) ? $"https://{host}" : options.Members),
                         EnableGrpcApi = options.EnableGrpcApi,
                         DataFolder = options.Folder,
                         CertificateOptions = new CertificateOptions
@@ -91,7 +92,7 @@ namespace Slik.Node
         internal static X509Certificate2 LoadCertificate(string certificateName)
         {
             using var rawCertificate = Assembly.GetExecutingAssembly().GetManifestResourceStream(typeof(Startup), certificateName);
-            
+
             var memoryStream = new MemoryStream(1024);
             rawCertificate?.CopyTo(memoryStream);
             memoryStream.Seek(0, SeekOrigin.Begin);
@@ -99,7 +100,7 @@ namespace Slik.Node
             return new X509Certificate2(memoryStream.ToArray(), "1234");
         }
 
-        private static Logger CreateLogger(string pathForLogs) =>        
+        private static Logger CreateLogger(string pathForLogs) =>
             new LoggerConfiguration()
                 .Enrich.WithThreadId()
                 .MinimumLevel.Verbose()
@@ -117,7 +118,7 @@ namespace Slik.Node
             {
                 List<string> result = new();
 
-                string[] memberList = membersArgument.Split(",", StringSplitOptions.RemoveEmptyEntries);
+                string[] memberList = membersArgument.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
 
                 for (int i = 0; i < memberList.Length; i++)
                 {

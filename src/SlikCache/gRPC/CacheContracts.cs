@@ -37,8 +37,13 @@ namespace Slik.Cache.Grpc.V1
     [DataContract]
     public class SetRequestOptions
     {
+        [DataMember(Order = 1)]
         public DateTime? AbsoluteExpiration { get; set; }
+
+        [DataMember(Order = 2)]
         public TimeSpan? AbsoluteExpirationRelativeToNow { get; set; }
+
+        [DataMember(Order = 3)]
         public TimeSpan? SlidingExpiration { get; set; }
 
         public DistributedCacheEntryOptions ToDistributedCacheEntryOptions() =>        

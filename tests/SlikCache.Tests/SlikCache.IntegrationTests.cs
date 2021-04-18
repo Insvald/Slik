@@ -51,19 +51,18 @@ namespace Slik.Cache.Tests
             _httpHandler = new RaftClientHandlerFactory(certifierMock.Object).CreateHandler("");
         }
 
-        private static Task RunInstances(int instanceCount, string executable, int startPort, string? arguments = null, CancellationToken token = default)
+        private static Task RunInstances(int instanceCount, string executable, int startPort, Func<int, string> memberListFunc, string? arguments = null, CancellationToken token = default)
         {
             List<Process> processList = new();
 
             for (int n = 0; n < instanceCount; n++)
             {
                 string path = Path.Combine(Directory.GetCurrentDirectory(), $"{startPort + n}");
-                string memberList = $"{string.Join(",", Enumerable.Range(startPort, instanceCount).Select(port => $"localhost:{port}")) }";
 
                 var newProcess = Process.Start(new ProcessStartInfo
                 {
                     FileName = executable,
-                    Arguments = $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberList}\" {arguments}",
+                    Arguments = $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberListFunc(n)}\" {arguments}",
                     CreateNoWindow = true,
                     WorkingDirectory = Path.GetDirectoryName(executable) ?? string.Empty
                 })
@@ -83,6 +82,12 @@ namespace Slik.Cache.Tests
                     p.Kill();
                 }
             }));
+        }
+
+        private static Task RunInstances(int instanceCount, string executable, int startPort, string? arguments = null, CancellationToken token = default)
+        {
+            string memberList = $"{string.Join(",", Enumerable.Range(startPort, instanceCount).Select(port => $"localhost:{port}")) }";
+            return RunInstances(instanceCount, executable, startPort, _ => memberList, arguments, token);
         }
 
         [TestMethod]
@@ -180,6 +185,35 @@ namespace Slik.Cache.Tests
                     var result = await UseGrpcService(port, service => service.Get(new KeyRequest { Key = "key" }));
                     Assert.IsTrue(result.Value.Length == 0);
                 }
+            }
+            finally
+            {
+                cts.Cancel();
+                await runTask;
+            }
+        }
+
+        [TestMethod]
+        [Ignore]
+        public async Task AddMemberTest()
+        {
+            int instances = 3;
+            int startPort = SlikOptions.DefaultPort;
+
+            using var cts = new CancellationTokenSource();
+
+            var runTask = RunInstances(instances, TestProjectPath, startPort, n => n switch
+            {
+                0 => $"https://localhost:{startPort}",
+                1 => $"https://localhost:{startPort},https://localhost:{startPort + 1}",
+                2 => $"https://localhost:{startPort},https://localhost:{startPort + 2}",
+                _ => throw new ArgumentOutOfRangeException(),
+            },
+            "--api --use-self-signed", cts.Token);
+
+            try
+            {
+                await Task.Delay(3000);
             }
             finally
             {

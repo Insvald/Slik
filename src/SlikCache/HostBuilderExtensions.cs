@@ -4,12 +4,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ProtoBuf.Grpc.Server;
+using Slik.Cache.Grpc.V1;
 using Slik.Security;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -23,9 +26,28 @@ namespace Slik.Cache
             cacheOptions ??= new SlikOptions
             {
                 Host = new IPEndPoint(IPAddress.Loopback, SlikOptions.DefaultPort)
-            };           
+            };
+
+            // updating configuration
+            string folder = string.IsNullOrEmpty(cacheOptions.DataFolder)
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Slik")
+                : cacheOptions.DataFolder;
+
+            var nodeConfiguration = new Dictionary<string, string>
+            {
+                { "folder", folder },
+                { "cacheLogLocation", Path.Combine(folder, "Cache") },
+                { "port", cacheOptions.Host.Port.ToString() },
+                { "protocolVersion", "http2" }
+            };
+
+            int i = 0;
+            foreach (string member in cacheOptions.Members)
+                nodeConfiguration[$"members:{i++}"] = member;
 
             builder
+                .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(nodeConfiguration))
+
                 .ConfigureWebHostDefaults(webBuilder => webBuilder
                     .Configure((context, app) =>
                     {
@@ -37,27 +59,14 @@ namespace Slik.Cache
                                 .UseRouting()
                                 .UseEndpoints(endpoints =>
                                 {
-                                    endpoints.MapGrpcService<Grpc.V1.SlikCacheGrpcService>();
+                                    endpoints.MapGrpcService<SlikMembershipGrpcService>();
+                                    endpoints.MapGrpcService<SlikCacheGrpcService>();
                                     //endpoints.MapGet("/", async context => await context.Response.WriteAsync("gRPC endpoint"));
                                 });
                         }
                     })
                     .ConfigureKestrel((context, options) =>
                     {
-                        // modifying configuration
-                        string folder = string.IsNullOrEmpty(cacheOptions.DataFolder)
-                            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Slik")
-                            : cacheOptions.DataFolder;
-
-                        context.Configuration["folder"] = folder;
-                        context.Configuration["cacheLogLocation"] = Path.Combine(folder, "Cache");
-                        context.Configuration["port"] = cacheOptions.Host.Port.ToString();
-                        context.Configuration["protocolVersion"] = "http2";
-
-                        int i = 0;
-                        foreach (string member in cacheOptions.Members)
-                            context.Configuration[$"members:{i++}"] = member;
-
                         var certifier = options.ApplicationServices.GetRequiredService<ICommunicationCertifier>();
                         options.ConfigureHttpsDefaults(options => certifier.SetupServer(options));
 
@@ -75,12 +84,14 @@ namespace Slik.Cache
                     else
                         services.AddSingleton<ICommunicationCertifier, CaSignedCertifier>();
 
-                    services                        
+                    services
                         .AddTransient<ICertificateGenerator, CertificateGenerator>()
-                        .Configure<CertificateOptions>(options => cacheOptions.CertificateOptions.CopyTo(options))                                                
+                        .Configure<CertificateOptions>(options => cacheOptions.CertificateOptions.CopyTo(options))
                         .AddSingleton<IHttpMessageHandlerFactory, RaftClientHandlerFactory>()
                         .Configure<SlikOptions>(options => cacheOptions.CopyTo(options))
                         .UsePersistenceEngine<IDistributedCache, SlikCache>()
+                        .AddSingleton<SlikMembershipHandler>()
+                        .AddSingleton<ISlikMembership>(ServiceProviderServiceExtensions.GetRequiredService<SlikMembershipHandler>)
                         .AddHostedService<SlikRouter>();
 
                     if (cacheOptions.EnableGrpcApi)
@@ -89,6 +100,6 @@ namespace Slik.Cache
                 .JoinCluster();
 
             return builder;
-        }        
-    }    
+        }
+    }
 }

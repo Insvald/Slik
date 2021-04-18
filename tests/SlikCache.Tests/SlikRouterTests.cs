@@ -21,7 +21,7 @@ namespace Slik.Cache.Tests
             var clusterMock = new Mock<IRaftCluster>();            
             var loggerMock = new Mock<ILogger<SlikRouter>>();
 
-            _router = new SlikRouter(_cache, clusterMock.Object, _messageBusMock.Object, loggerMock.Object);
+            _router = new SlikRouter(_cache, null /* TODO urgently */, clusterMock.Object, _messageBusMock.Object, loggerMock.Object);
         }
 
         [TestCleanup]
@@ -74,7 +74,7 @@ namespace Slik.Cache.Tests
         public async Task UpdateLeaderAsync_LocalLeader_ReturnsFalse()
         {            
             ArrangeLeader(false);
-            bool handled = await _router.UpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>()));
+            bool handled = await _router.CacheUpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>()), CancellationToken.None);
             Assert.IsFalse(handled);
         }
 
@@ -82,7 +82,7 @@ namespace Slik.Cache.Tests
         public async Task UpdateLeaderAsync_RemoteLeader_ReturnsTrue()
         {                     
             ArrangeLeader(true, SlikRouter.OK);
-            bool handled = await _router.UpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>()));
+            bool handled = await _router.CacheUpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>()), CancellationToken.None);
             Assert.IsTrue(handled);
         }
 
@@ -91,7 +91,7 @@ namespace Slik.Cache.Tests
         {
             ArrangeLeader(true, "Not OK");
             await Assert.ThrowsExceptionAsync<SlikRouter.RouterException>(() => 
-                _router.UpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>())).AsTask());            
+                _router.CacheUpdateLeaderAsync(new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>()), CancellationToken.None).AsTask());            
         }
 
         private async Task<string> ArrangeMessageAndReadResponse(IMessage message)
@@ -115,7 +115,7 @@ namespace Slik.Cache.Tests
         [TestMethod]
         public async Task ReceiveMessage_IncorrectMessageType_ReturnsNotOK()
         {
-            var message = new TextMessage("hello", SlikRouter.RequestMessageName);
+            var message = new TextMessage("hello", SlikRouter.CacheRequestMessage);
 
             string response = await ArrangeMessageAndReadResponse(message);
 
@@ -126,7 +126,7 @@ namespace Slik.Cache.Tests
         public async Task ReceiveMessage_EmptyJsonMessage_ReturnsNotOK()
         {
 #pragma warning disable 8625 // sending null on purpose
-            var message = new JsonMessage<CacheLogRecord>(SlikRouter.RequestMessageName, null);
+            var message = new JsonMessage<CacheLogRecord>(SlikRouter.CacheRequestMessage, null);
 #pragma warning restore 8625
 
             string response = await ArrangeMessageAndReadResponse(message);
@@ -140,7 +140,7 @@ namespace Slik.Cache.Tests
             bool relayed = false;
             ArrangeLeader(false, SlikRouter.OK, () => relayed = true);
 
-            var message = new JsonMessage<CacheLogRecord>(SlikRouter.RequestMessageName, new CacheLogRecord(CacheOperation.Update, "key", new byte[] { 1, 2, 3 }));
+            var message = new JsonMessage<CacheLogRecord>(SlikRouter.CacheRequestMessage, new CacheLogRecord(CacheOperation.Update, "key", new byte[] { 1, 2, 3 }));
 
             string response = await ArrangeMessageAndReadResponse(message);
 
@@ -154,7 +154,7 @@ namespace Slik.Cache.Tests
             bool relayed = false;
             ArrangeLeader(true, SlikRouter.OK, () => relayed = true);
 
-            var message = new JsonMessage<CacheLogRecord>(SlikRouter.RequestMessageName, new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>()));
+            var message = new JsonMessage<CacheLogRecord>(SlikRouter.CacheRequestMessage, new CacheLogRecord(CacheOperation.Update, "key", Array.Empty<byte>()));
 
             string response = await ArrangeMessageAndReadResponse(message);
 
