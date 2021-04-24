@@ -1,4 +1,5 @@
 [![Build](https://github.com/Insvald/Slik/actions/workflows/build-and-tests.yml/badge.svg)](https://github.com/Insvald/Slik/actions/workflows/build-and-tests.yml)
+[![Integration tests](https://github.com/Insvald/Slik/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/Insvald/Slik/actions/workflows/integration-tests.yml)
 [![Nuget](https://img.shields.io/nuget/v/Slik.Cache)](https://www.nuget.org/api/v2/package/Slik.Cache/1.0.0)
 [![The current version of Slik.Cache](https://img.shields.io/github/v/release/Insvald/Slik)](https://github.com/Insvald/Slik)
 [![Slik.Cache uses MIT License](https://img.shields.io/github/license/Insvald/Slik)](https://github.com/Insvald/Slik/blob/master/LICENSE)
