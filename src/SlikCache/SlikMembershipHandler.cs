@@ -78,13 +78,13 @@ namespace Slik.Cache
                             try
                             {
                                 using var channel = GrpcChannel.ForAddress(member, new GrpcChannelOptions { HttpHandler = httpHandler });
-                                var service = channel.CreateGrpcService<ISlikMembershipGrpcService>();
+                                var service = channel.CreateGrpcService<ISlikMembershipService>();
                                 await service.Add(new MemberRequest { Member = $"https://{_options.CurrentValue.Host}" }).ConfigureAwait(false);
                                 success = true;
                             }
                             catch (Exception e)
                             {
-                                _logger.LogWarning(e, $"Error contacting remote member '{member}'.");
+                                _logger.LogWarning(e, $"Error contacting member '{member}'.");
                             }
                         }
 
@@ -126,8 +126,9 @@ namespace Slik.Cache
 
                 lock (_lock)
                 {
-                    var members = _cluster.Members.Select(m => m.EndPoint.ToString());
+                    var members = _cluster.Members.Select(m => $"https://{m.EndPoint}");
                     int memberCount = members.Count();
+                    record.Member = record.Member.Replace("localhost", "127.0.0.1");
 
                     switch (record.Operation)
                     {

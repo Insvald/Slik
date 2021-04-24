@@ -138,20 +138,20 @@ namespace Slik.Cache.IntegrationTests
             }
         }
 
-        private static async ValueTask<T> UseGrpcService<T>(int port, Func<ISlikCacheService, ValueTask<T>> useFunction)
+        private static async ValueTask<T> UseGrpcService<I, T>(int port, Func<I, ValueTask<T>> useFunction) where I : class
         {
             using var channel = GrpcChannel.ForAddress($"https://localhost:{port}", new GrpcChannelOptions
             {
                 HttpHandler = _httpHandler
             });
 
-            var service = channel.CreateGrpcService<ISlikCacheService>();
+            var service = channel.CreateGrpcService<I>();
 
             return await useFunction(service);
         }
 
-        private static async Task UseGrpcService(int port, Func<ISlikCacheService, Task> useAction) =>
-            await UseGrpcService(port, async service => { await useAction(service); return true; });
+        private static async Task UseGrpcService<I>(int port, Func<I, Task> useAction) where I : class =>
+            await UseGrpcService<I, bool>(port, async service => { await useAction(service); return true; });
 
         [TestMethod]
         public async Task SetAndRemove_GetReplicated()
@@ -180,25 +180,25 @@ namespace Slik.Cache.IntegrationTests
         {
             var expectedValue = new byte[] { 1, 2, 3 };
 
-            await UseGrpcService(startPort, service => service.Set(new SetRequest { Key = "key", Value = expectedValue }));
+            await UseGrpcService<ISlikCacheService>(startPort, service => service.Set(new SetRequest { Key = "key", Value = expectedValue }));
 
             await Task.Delay(2000);
 
             // checking set
             for (int port = startPort; port < startPort + instances; port++)
             {
-                var result = await UseGrpcService(port, service => service.Get(new KeyRequest { Key = "key" }));
+                var result = await UseGrpcService<ISlikCacheService, ValueResponse>(port, service => service.Get(new KeyRequest { Key = "key" }));
                 Assert.IsTrue(expectedValue.SequenceEqual(result.Value));
             }
 
-            await UseGrpcService(startPort, service => service.Remove(new KeyRequest { Key = "key" }));
+            await UseGrpcService<ISlikCacheService>(startPort, service => service.Remove(new KeyRequest { Key = "key" }));
 
             await Task.Delay(2000);
 
             // checking remove
             for (int port = startPort; port < startPort + instances; port++)
             {
-                var result = await UseGrpcService(port, service => service.Get(new KeyRequest { Key = "key" }));
+                var result = await UseGrpcService<ISlikCacheService, ValueResponse>(port, service => service.Get(new KeyRequest { Key = "key" }));
                 Assert.IsTrue(result.Value.Length == 0);
             }
         }
@@ -224,6 +224,49 @@ namespace Slik.Cache.IntegrationTests
             {
                 await Task.Delay(8000);
                 await SetGetRemoveAssertAsync(startPort, instances);
+            }
+            finally
+            {
+                cts.Cancel();
+                await runTask;
+            }
+        }
+
+        [TestMethod]
+        public async Task RemoveMemberTest()
+        {
+            int instances = 3;
+            int startPort = SlikOptions.DefaultPort;
+
+            using var cts = new CancellationTokenSource();
+
+            var runTask = RunInstances(instances, TestProjectPath, startPort, n => n switch
+            {
+                0 => $"https://localhost:{startPort}",
+                1 => $"https://localhost:{startPort},https://localhost:{startPort + 1}",
+                2 => $"https://localhost:{startPort},https://localhost:{startPort + 2}",
+                //3 => $"https://localhost:{startPort},https://localhost:{startPort + 3}",
+                _ => throw new ArgumentOutOfRangeException(),
+            },
+            "--api", cts.Token);
+
+            try
+            {
+                await Task.Delay(4000);
+                await SetGetRemoveAssertAsync(startPort, instances);
+                await UseGrpcService<ISlikMembershipService>(startPort, m => m.Remove(new MemberRequest { Member = $"https://localhost:{startPort + 2}" }));
+                await Task.Delay(1000);
+
+                var expectedValue = new byte[] { 3, 2, 1 };
+
+                await UseGrpcService<ISlikCacheService>(startPort, service => service.Set(new SetRequest { Key = "key", Value = expectedValue }));
+
+                await Task.Delay(1000);
+
+                // checking that value is not replicated to the removed node
+                var result = await UseGrpcService<ISlikCacheService, ValueResponse>(startPort + 2, service => service.Get(new KeyRequest { Key = "key" }));
+                Assert.IsFalse(expectedValue.SequenceEqual(result.Value));
+
             }
             finally
             {

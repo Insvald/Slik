@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Slik.Cache.Grpc.V1
 {
-    public class SlikMembershipGrpcService : BaseGrpcService, ISlikMembershipGrpcService
+    public class SlikMembershipGrpcService : BaseGrpcService, ISlikMembershipService
     {
         private readonly ISlikMembership _slikMembership;
 

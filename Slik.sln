@@ -22,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		CHANGELOG.md = CHANGELOG.md
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
@@ -30,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikSecurity", "src\SlikSec
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikSecurity.Tests", "tests\SlikSecurity.Tests\SlikSecurity.Tests.csproj", "{08680861-E930-4C71-A195-A48ED9994383}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlikCache.IntegrationTests", "tests\SlikCache.IntegrationTests\SlikCache.IntegrationTests.csproj", "{3FE2356D-51F3-42CB-819C-06ABE67E8D57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikCache.IntegrationTests", "tests\SlikCache.IntegrationTests\SlikCache.IntegrationTests.csproj", "{3FE2356D-51F3-42CB-819C-06ABE67E8D57}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
