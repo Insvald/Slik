@@ -61,7 +61,6 @@ namespace Slik.Cache
                                 {
                                     endpoints.MapGrpcService<SlikMembershipGrpcService>();
                                     endpoints.MapGrpcService<SlikCacheGrpcService>();
-                                    //endpoints.MapGet("/", async context => await context.Response.WriteAsync("gRPC endpoint"));
                                 });
                         }
                     })

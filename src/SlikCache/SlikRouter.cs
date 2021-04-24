@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -227,16 +228,21 @@ namespace Slik.Cache
             return Task.CompletedTask;
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(CancellationToken cancellationToken)
         {
             _slikCache.RedirectHandler -= CacheUpdateLeaderAsync;
             _slikCache.ReplicateHandler -= ReplicateAsync;
-            
+
             if (_slikMembership != null)
-                _slikMembership.RedirectHandler -= MemberUpdateLeaderAsync;
+            {
+                string localEndpoint = $"https://{_cluster.Members.FirstOrDefault(m => !m.IsRemote)?.EndPoint}";
+
+                await _slikMembership.Remove(localEndpoint, cancellationToken).ConfigureAwait(false);
+
+                _slikMembership.RedirectHandler -= MemberUpdateLeaderAsync;                
+            }
 
             _messageBus.RemoveListener(this);
-            return Task.CompletedTask;
         }
         #endregion
     }
