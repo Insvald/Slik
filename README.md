@@ -51,7 +51,6 @@ SlikNode --port=3094 --folder="node 3" --members=localhost:3092,localhost:3093,l
 
 ## Roadmap
 - [x] Self-signed certificates generation
-- [x] Support adding of cluster members in runtime
-- [x] Support removing of cluster members in runtime
+- [x] Support adding/removal of cluster members in runtime
 - [x] More unit and integration tests to cover adding/removing cluster members
 - [ ] Docker compose for starting cluster in containers
