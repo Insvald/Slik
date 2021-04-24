@@ -28,7 +28,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikSecurity", "src\SlikSecurity\SlikSecurity.csproj", "{4B3A2A37-4F6B-4F5D-94D9-3BF6FCC723AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlikSecurity.Tests", "tests\SlikSecurity.Tests\SlikSecurity.Tests.csproj", "{08680861-E930-4C71-A195-A48ED9994383}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikSecurity.Tests", "tests\SlikSecurity.Tests\SlikSecurity.Tests.csproj", "{08680861-E930-4C71-A195-A48ED9994383}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlikCache.IntegrationTests", "tests\SlikCache.IntegrationTests\SlikCache.IntegrationTests.csproj", "{3FE2356D-51F3-42CB-819C-06ABE67E8D57}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +58,10 @@ Global
 		{08680861-E930-4C71-A195-A48ED9994383}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08680861-E930-4C71-A195-A48ED9994383}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08680861-E930-4C71-A195-A48ED9994383}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FE2356D-51F3-42CB-819C-06ABE67E8D57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FE2356D-51F3-42CB-819C-06ABE67E8D57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FE2356D-51F3-42CB-819C-06ABE67E8D57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FE2356D-51F3-42CB-819C-06ABE67E8D57}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -66,6 +72,7 @@ Global
 		{E586B3F2-3681-4634-A14D-1B205C7A06B9} = {D13362F1-AC5C-47D4-B5D1-599BE50DA652}
 		{4B3A2A37-4F6B-4F5D-94D9-3BF6FCC723AE} = {400B4B8E-5876-43F5-863A-EE99E6B6A1F1}
 		{08680861-E930-4C71-A195-A48ED9994383} = {E489BADE-712B-41D0-8D39-F2D6976C66F6}
+		{3FE2356D-51F3-42CB-819C-06ABE67E8D57} = {E489BADE-712B-41D0-8D39-F2D6976C66F6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6A93E74-376C-4395-AD7B-E465B401FB1C}

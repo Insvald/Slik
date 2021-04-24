@@ -17,7 +17,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-[assembly: InternalsVisibleTo("SlikCache.Tests")]
+[assembly: InternalsVisibleTo("SlikCache.IntegrationTests")]
 namespace Slik.Node
 {
     internal static class Startup
