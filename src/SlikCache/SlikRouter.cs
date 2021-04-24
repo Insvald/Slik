@@ -1,11 +1,9 @@
 ﻿using DotNext.Net.Cluster.Consensus.Raft;
 using DotNext.Net.Cluster.Messaging;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,7 +16,7 @@ namespace Slik.Cache
     {
         private readonly ILogger<SlikRouter> _logger;
         private readonly SlikCache _slikCache;
-        private readonly SlikMembershipHandler _slikMembership;
+        private readonly SlikMembershipHandler? _slikMembership;
         private readonly IMessageBus _messageBus;
         private readonly IRaftCluster _cluster;
 
@@ -29,11 +27,11 @@ namespace Slik.Cache
         internal const string OK = "OK";
         private const string WrongRequest = "Wrong request";
 
-        public SlikRouter(SlikCache slikCache, SlikMembershipHandler slikMembership, IRaftCluster cluster, IMessageBus messageBus, ILogger<SlikRouter> logger)
+        public SlikRouter(SlikCache slikCache, IServiceProvider serviceProvider, IRaftCluster cluster, IMessageBus messageBus, ILogger<SlikRouter> logger)
         {
             _logger = logger;
             _slikCache = slikCache;
-            _slikMembership = slikMembership;
+            _slikMembership = serviceProvider.GetService<SlikMembershipHandler>();
             _messageBus = messageBus;
             _cluster = cluster;
         }
@@ -131,16 +129,19 @@ namespace Slik.Cache
 
         private async Task ApplyMembershipRecordLocally(MembershipChangeRecord record, CancellationToken token)
         {
-            switch (record.Operation)
+            if (_slikMembership != null)
             {
-                case MembershipChangeRecord.MemebershipOperation.Add:
-                    _logger.LogDebug("Applying a member addition from remote node");
-                    await _slikMembership.Add(record.Member, token).ConfigureAwait(false);
-                    break;
-                case MembershipChangeRecord.MemebershipOperation.Remove:
-                    _logger.LogDebug("Applying a member removal from remote node");
-                    await _slikMembership.Remove(record.Member, token).ConfigureAwait(false);
-                    break;
+                switch (record.Operation)
+                {
+                    case MembershipChangeRecord.MemebershipOperation.Add:
+                        _logger.LogDebug("Applying a member addition from remote node");
+                        await _slikMembership.Add(record.Member, token).ConfigureAwait(false);
+                        break;
+                    case MembershipChangeRecord.MemebershipOperation.Remove:
+                        _logger.LogDebug("Applying a member removal from remote node");
+                        await _slikMembership.Remove(record.Member, token).ConfigureAwait(false);
+                        break;
+                }
             }
         }
 
@@ -218,7 +219,10 @@ namespace Slik.Cache
         {
             _slikCache.RedirectHandler += CacheUpdateLeaderAsync;
             _slikCache.ReplicateHandler += ReplicateAsync;
-            _slikMembership.RedirectHandler += MemberUpdateLeaderAsync;
+
+            if (_slikMembership != null)
+                _slikMembership.RedirectHandler += MemberUpdateLeaderAsync;
+
             _messageBus.AddListener(this);
             return Task.CompletedTask;
         }
@@ -227,7 +231,10 @@ namespace Slik.Cache
         {
             _slikCache.RedirectHandler -= CacheUpdateLeaderAsync;
             _slikCache.ReplicateHandler -= ReplicateAsync;
-            _slikMembership.RedirectHandler -= MemberUpdateLeaderAsync;
+            
+            if (_slikMembership != null)
+                _slikMembership.RedirectHandler -= MemberUpdateLeaderAsync;
+
             _messageBus.RemoveListener(this);
             return Task.CompletedTask;
         }

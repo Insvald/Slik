@@ -21,7 +21,7 @@ namespace Slik.Cache.Tests
             var clusterMock = new Mock<IRaftCluster>();            
             var loggerMock = new Mock<ILogger<SlikRouter>>();
 
-            _router = new SlikRouter(_cache, null /* TODO urgently */, clusterMock.Object, _messageBusMock.Object, loggerMock.Object);
+            _router = new SlikRouter(_cache, Mock.Of<IServiceProvider>(), clusterMock.Object, _messageBusMock.Object, loggerMock.Object);
         }
 
         [TestCleanup]

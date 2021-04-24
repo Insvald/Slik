@@ -61,7 +61,7 @@ namespace Slik.Cache
 
                 var remoteMembers = _options.CurrentValue.Members.Where(member => 
                 {
-                    Uri uri = new Uri(member);
+                    var uri = new Uri(member);
                     return uri.Port != _options.CurrentValue.Host.Port || !localIps.Contains(uri.Host);
                 });
 

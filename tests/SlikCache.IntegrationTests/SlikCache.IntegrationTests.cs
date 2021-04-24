@@ -16,7 +16,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Slik.Cache.Tests
+namespace Slik.Cache.IntegrationTests
 {
     [TestClass]
     public class SilkCacheIntegrationTests
@@ -39,16 +39,29 @@ namespace Slik.Cache.Tests
 
         static SilkCacheIntegrationTests()
         {
-            _certificate = Node.Startup.LoadCertificate("node.pfx");
+            using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser, OpenFlags.ReadWrite | OpenFlags.OpenExistingOnly);
 
-            var certifierMock = new Mock<ICommunicationCertifier>();
-            certifierMock.Setup(c => c.SetupClient(It.IsAny<SslClientAuthenticationOptions>())).Callback<SslClientAuthenticationOptions>(opt =>
+            var foundCertificates = store.Certificates.Find(X509FindType.FindBySubjectName, SelfSignedCertifier.SelfSignedSubject, false);
+                            
+            if (foundCertificates.Count > 0)
             {
-                opt.ClientCertificates = new(new[] { _certificate });
-                opt.RemoteCertificateValidationCallback = (_, __, ___, ____) => true;
-            });
+                var rootCertificate = foundCertificates[0];
+                var generator = new CertificateGenerator(Mock.Of<ILogger<CertificateGenerator>>());
 
-            _httpHandler = new RaftClientHandlerFactory(certifierMock.Object).CreateHandler("");
+                //_certificate = Node.Startup.LoadCertificate("node.pfx");
+                _certificate = generator.Generate("test client cert", rootCertificate, CertificateAuthentication.Client);
+
+                var certifierMock = new Mock<ICommunicationCertifier>();
+                certifierMock.Setup(c => c.SetupClient(It.IsAny<SslClientAuthenticationOptions>())).Callback<SslClientAuthenticationOptions>(opt =>
+                {
+                    opt.ClientCertificates = new(new[] { _certificate });
+                    opt.RemoteCertificateValidationCallback = (_, __, ___, ____) => true;
+                });
+
+                _httpHandler = new RaftClientHandlerFactory(certifierMock.Object).CreateHandler("");
+            }
+            else
+                throw new Exception($"Certificate {SelfSignedCertifier.SelfSignedSubject} not found");
         }
 
         private static Task RunInstances(int instanceCount, string executable, int startPort, Func<int, string> memberListFunc, string? arguments = null, CancellationToken token = default)
@@ -62,7 +75,7 @@ namespace Slik.Cache.Tests
                 var newProcess = Process.Start(new ProcessStartInfo
                 {
                     FileName = executable,
-                    Arguments = $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberListFunc(n)}\" {arguments}",
+                    Arguments = $"--port={startPort + n} --folder=\"{path}\" --members=\"{memberListFunc(n)}\" --use-self-signed {arguments}",
                     CreateNoWindow = true,
                     WorkingDirectory = Path.GetDirectoryName(executable) ?? string.Empty
                 })
@@ -91,7 +104,6 @@ namespace Slik.Cache.Tests
         }
 
         [TestMethod]
-        [Ignore]
         public async Task Cluster_Consensus_HappyPath()
         {
             int instances = 3;
@@ -101,7 +113,7 @@ namespace Slik.Cache.Tests
 
             cts.CancelAfter(TimeSpan.FromSeconds(7));
 
-            await RunInstances(instances, TestProjectPath, startPort, "--testCache=true", cts.Token);
+            await RunInstances(instances, TestProjectPath, startPort, "--testCache", cts.Token);
 
             // collect logs and compare history from each node
             List<string[]> history = new();
@@ -149,42 +161,20 @@ namespace Slik.Cache.Tests
             await UseGrpcService(port, async service => { await useAction(service); return true; });
 
         [TestMethod]
-        [Ignore]
         public async Task SetAndRemove_GetReplicated()
         {
             int instances = 3;
             int startPort = SlikOptions.DefaultPort;
-            var expectedValue = new byte[] { 1, 2, 3 };
 
             using var cts = new CancellationTokenSource();
 
-            var runTask = RunInstances(instances, TestProjectPath, startPort, "--api=true", cts.Token);
+            var runTask = RunInstances(instances, TestProjectPath, startPort, "--api", cts.Token);
 
-            await Task.Delay(500);
+            await Task.Delay(1500);
 
             try
             {
-                await UseGrpcService(startPort, service => service.Set(new SetRequest { Key = "key", Value = expectedValue }));
-
-                await Task.Delay(500);
-
-                // checking set
-                for (int port = startPort; port < startPort + instances; port++)
-                {
-                    var result = await UseGrpcService(port, service => service.Get(new KeyRequest { Key = "key" }));
-                    Assert.IsTrue(expectedValue.SequenceEqual(result.Value));
-                }
-
-                await UseGrpcService(startPort, service => service.Remove(new KeyRequest { Key = "key" }));
-
-                await Task.Delay(500);
-
-                // checking remove
-                for (int port = startPort; port < startPort + instances; port++)
-                {
-                    var result = await UseGrpcService(port, service => service.Get(new KeyRequest { Key = "key" }));
-                    Assert.IsTrue(result.Value.Length == 0);
-                }
+                await SetGetRemoveAssertAsync(startPort, instances);
             }
             finally
             {
@@ -193,8 +183,34 @@ namespace Slik.Cache.Tests
             }
         }
 
+        private static async Task SetGetRemoveAssertAsync(int startPort, int instances)
+        {
+            var expectedValue = new byte[] { 1, 2, 3 };
+
+            await UseGrpcService(startPort, service => service.Set(new SetRequest { Key = "key", Value = expectedValue }));
+
+            await Task.Delay(500);
+
+            // checking set
+            for (int port = startPort; port < startPort + instances; port++)
+            {
+                var result = await UseGrpcService(port, service => service.Get(new KeyRequest { Key = "key" }));
+                Assert.IsTrue(expectedValue.SequenceEqual(result.Value));
+            }
+
+            await UseGrpcService(startPort, service => service.Remove(new KeyRequest { Key = "key" }));
+
+            await Task.Delay(500);
+
+            // checking remove
+            for (int port = startPort; port < startPort + instances; port++)
+            {
+                var result = await UseGrpcService(port, service => service.Get(new KeyRequest { Key = "key" }));
+                Assert.IsTrue(result.Value.Length == 0);
+            }
+        }
+
         [TestMethod]
-        [Ignore]
         public async Task AddMemberTest()
         {
             int instances = 3;
@@ -209,11 +225,12 @@ namespace Slik.Cache.Tests
                 2 => $"https://localhost:{startPort},https://localhost:{startPort + 2}",
                 _ => throw new ArgumentOutOfRangeException(),
             },
-            "--api --use-self-signed", cts.Token);
+            "--api", cts.Token);
 
             try
             {
-                await Task.Delay(3000);
+                await Task.Delay(2000);
+                await SetGetRemoveAssertAsync(startPort, instances);
             }
             finally
             {

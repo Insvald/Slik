@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 
 [assembly: InternalsVisibleTo("SlikCache.Tests")]
+[assembly: InternalsVisibleTo("SlikCache.IntegrationTests")]
 [assembly: InternalsVisibleTo("SlikSecurity.Tests")]
 namespace Slik.Security
 {
