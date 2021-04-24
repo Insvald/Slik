@@ -1,5 +1,6 @@
 ﻿using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ProtoBuf.Grpc.Client;
@@ -39,29 +40,21 @@ namespace Slik.Cache.IntegrationTests
 
         static SilkCacheIntegrationTests()
         {
-            using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser, OpenFlags.ReadWrite | OpenFlags.OpenExistingOnly);
+            var generator = new CertificateGenerator(Mock.Of<ILogger<CertificateGenerator>>());
+            var certifier = new SelfSignedCertifier(Options.Create(new CertificateOptions { UseSelfSigned = true }), generator, Mock.Of<ILogger<SelfSignedCertifier>>());
+            var rootCertificate = certifier.RootCertificate;                                        
 
-            var foundCertificates = store.Certificates.Find(X509FindType.FindBySubjectName, SelfSignedCertifier.SelfSignedSubject, false);
-                            
-            if (foundCertificates.Count > 0)
+            //_certificate = Node.Startup.LoadCertificate("node.pfx");
+            _certificate = generator.Generate("test client cert", rootCertificate, CertificateAuthentication.Client);
+
+            var certifierMock = new Mock<ICommunicationCertifier>();
+            certifierMock.Setup(c => c.SetupClient(It.IsAny<SslClientAuthenticationOptions>())).Callback<SslClientAuthenticationOptions>(opt =>
             {
-                var rootCertificate = foundCertificates[0];
-                var generator = new CertificateGenerator(Mock.Of<ILogger<CertificateGenerator>>());
+                opt.ClientCertificates = new(new[] { _certificate });
+                opt.RemoteCertificateValidationCallback = (_, __, ___, ____) => true;
+            });
 
-                //_certificate = Node.Startup.LoadCertificate("node.pfx");
-                _certificate = generator.Generate("test client cert", rootCertificate, CertificateAuthentication.Client);
-
-                var certifierMock = new Mock<ICommunicationCertifier>();
-                certifierMock.Setup(c => c.SetupClient(It.IsAny<SslClientAuthenticationOptions>())).Callback<SslClientAuthenticationOptions>(opt =>
-                {
-                    opt.ClientCertificates = new(new[] { _certificate });
-                    opt.RemoteCertificateValidationCallback = (_, __, ___, ____) => true;
-                });
-
-                _httpHandler = new RaftClientHandlerFactory(certifierMock.Object).CreateHandler("");
-            }
-            else
-                throw new Exception($"Certificate {SelfSignedCertifier.SelfSignedSubject} not found");
+            _httpHandler = new RaftClientHandlerFactory(certifierMock.Object).CreateHandler("");
         }
 
         private static Task RunInstances(int instanceCount, string executable, int startPort, Func<int, string> memberListFunc, string? arguments = null, CancellationToken token = default)

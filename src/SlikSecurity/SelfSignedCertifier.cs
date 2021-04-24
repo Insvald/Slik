@@ -12,7 +12,7 @@ namespace Slik.Security
     public sealed class SelfSignedCertifier : CertifierBase, IDisposable
     {
         internal const string SelfSignedSubject = "Slik Root CA";
-        private readonly X509Certificate2 _rootCertificate;
+        internal readonly X509Certificate2 RootCertificate;
         private readonly ICertificateGenerator _generator;
 
         public SelfSignedCertifier(IOptions<CertificateOptions> options, ICertificateGenerator generator, ILogger<SelfSignedCertifier> logger)
@@ -29,31 +29,31 @@ namespace Slik.Security
 
             if (foundCertificates.Count == 0)
             {
-                _rootCertificate = generator.Generate(SelfSignedSubject);
-                store.Add(_rootCertificate);
+                RootCertificate = generator.Generate(SelfSignedSubject);
+                store.Add(RootCertificate);
             }
             else
-                _rootCertificate = foundCertificates[0];
+                RootCertificate = foundCertificates[0];
 
             store.Close();
 
             Options.ServerCertificate =
-                generator.Generate($"Service based on '{SelfSignedSubject}'", _rootCertificate, CertificateAuthentication.Server);
+                generator.Generate($"Service based on '{SelfSignedSubject}'", RootCertificate, CertificateAuthentication.Server);
             Options.ClientCertificate =
-                generator.Generate($"Client based on '{SelfSignedSubject}'", _rootCertificate, CertificateAuthentication.Client);
+                generator.Generate($"Client based on '{SelfSignedSubject}'", RootCertificate, CertificateAuthentication.Client);
         }
 
         public void Dispose()
         {
-            _rootCertificate?.Dispose();
+            RootCertificate?.Dispose();
             Options.ClientCertificate?.Dispose();
             Options.ServerCertificate?.Dispose();
         }
 
         protected override bool ValidateClientCertificate(X509Certificate2 certificate) =>
-            _generator.ValidateSelfSigned(certificate, _rootCertificate);
+            _generator.ValidateSelfSigned(certificate, RootCertificate);
 
         protected override bool ValidateServerCertificate(X509Certificate2 certificate) =>
-            _generator.ValidateSelfSigned(certificate, _rootCertificate);
+            _generator.ValidateSelfSigned(certificate, RootCertificate);
     }
 }
