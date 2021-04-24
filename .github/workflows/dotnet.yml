@@ -22,5 +22,7 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+    - name: Test Cache
+      run: dotnet test tests/SlikCache.Tests --no-build --verbosity normal
+    - name: Test Security
+      run: dotnet test tests/SlikSecurity.Tests --no-build --verbosity normal
