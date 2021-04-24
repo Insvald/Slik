@@ -163,7 +163,7 @@ namespace Slik.Cache.IntegrationTests
 
             var runTask = RunInstances(instances, TestProjectPath, startPort, "--api", cts.Token);
 
-            await Task.Delay(3000);
+            await Task.Delay(6000);
 
             try
             {
@@ -182,7 +182,7 @@ namespace Slik.Cache.IntegrationTests
 
             await UseGrpcService(startPort, service => service.Set(new SetRequest { Key = "key", Value = expectedValue }));
 
-            await Task.Delay(1000);
+            await Task.Delay(2000);
 
             // checking set
             for (int port = startPort; port < startPort + instances; port++)
@@ -193,7 +193,7 @@ namespace Slik.Cache.IntegrationTests
 
             await UseGrpcService(startPort, service => service.Remove(new KeyRequest { Key = "key" }));
 
-            await Task.Delay(1000);
+            await Task.Delay(2000);
 
             // checking remove
             for (int port = startPort; port < startPort + instances; port++)
@@ -222,7 +222,7 @@ namespace Slik.Cache.IntegrationTests
 
             try
             {
-                await Task.Delay(4000);
+                await Task.Delay(8000);
                 await SetGetRemoveAssertAsync(startPort, instances);
             }
             finally
