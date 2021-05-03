@@ -5,7 +5,7 @@
 [![Slik.Cache uses MIT License](https://img.shields.io/github/license/Insvald/Slik)](https://github.com/Insvald/Slik/blob/master/LICENSE)
 
 # Slik.Cache
-Distributed In-process Cache in C# / Net 6.0 with external gRPC API (HTTP/2, client/server certificates)
+Distributed In-process Cache in C# and Net 5.0/6.0 with external gRPC API (HTTP/2, client/server certificates)
 
 Based on a [magnificent dotNext library](https://github.com/sakno/dotNext) and its Raft cluster implementation. 
 
