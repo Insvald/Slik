@@ -10,11 +10,11 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2 
-    - name: Setup .NET 5.0
+    - name: Set up .NET 5.0
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
-    - name: Setup .NET 6.0
+    - name: Set up .NET 6.0
       uses: actions/setup-dotnet@v1.8.0
       with:
         dotnet-version: '6.0'
@@ -34,12 +34,7 @@ jobs:
         push: true
         file: src/SlikCord/Dockerfile
         tags: ghcr.io/insvald/slik-cord:5.0        
-    - name: Start containers (docker-compose)
-      run: |
-                    docker-compose up -d  
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test tests/SlikCord.IntegrationTests --no-build --verbosity normal
+    - name: Start container
+      run: docker run -d -p 3099:80 ghcr.io/insvald/slik-cord:5.0
+    - name: Restore, build and test
+      run: dotnet test tests/SlikCord.IntegrationTests
