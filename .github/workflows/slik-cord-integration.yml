@@ -1,0 +1,61 @@
+name: Integration tests for Slik.Cord
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: build .Net 5 container
+      uses: docker/build-push-action@v2.4.0
+      with:
+        build-args: FRAMEWORK=5.0
+        file: src/SlikCord/Dockerfile
+        push: true
+        tags: insvald/slik-cord:5.0
+    - name: build .Net 6 container
+      uses: docker/build-push-action@v2.4.0
+      with:
+        build-args: FRAMEWORK=6.0
+        file: src/SlikCord/Dockerfile
+        push: true
+        tags: insvald/slik-cord:6.0
+        
+  startcontainer5:
+    runs-on: ubuntu-latest
+  
+    container:
+      image: insvald/slik-cord:5.0
+      ports:
+        - 3099:80
+        
+  startcontainer6:
+    runs-on: ubuntu-latest
+  
+    container:
+      image: insvald/slik-cord:6.0
+      ports:
+        - 3098:80
+        
+  test:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v2    
+    - name: Setup .NET 5.0
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Setup .NET 6.0
+      uses: actions/setup-dotnet@v1.8.0
+      with:
+        dotnet-version: '6.0'
+        include-prerelease: True
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test tests/SlikCord.IntegrationTests --no-build --verbosity normal
