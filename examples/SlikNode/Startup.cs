@@ -45,7 +45,7 @@ namespace Slik.Node
 
         public static async Task<int> StartHostAsync(CommandLineOptions options)
         {
-            options.Folder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Slik");
+            options.Folder ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Slik", "Node");
 
             using var logger = CreateLogger(Path.Combine(options.Folder, "Logs"));
 
@@ -86,6 +86,10 @@ namespace Slik.Node
             {
                 logger.Fatal(ex, $"Fatal error occured: {ex.Message}. The node is closing.");
                 return -1;
+            }
+            finally
+            {
+                Log.CloseAndFlush();
             }
         }
 

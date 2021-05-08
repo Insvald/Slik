@@ -20,6 +20,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikNode", "examples\SlikNo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2B7ED900-2F51-4D75-9118-3FCFB2882A0A}"
 	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		CHANGELOG.md = CHANGELOG.md
@@ -32,6 +33,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikSecurity.Tests", "tests\SlikSecurity.Tests\SlikSecurity.Tests.csproj", "{08680861-E930-4C71-A195-A48ED9994383}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikCache.IntegrationTests", "tests\SlikCache.IntegrationTests\SlikCache.IntegrationTests.csproj", "{3FE2356D-51F3-42CB-819C-06ABE67E8D57}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikCord", "src\SlikCord\SlikCord.csproj", "{C36A61D7-EDBA-4777-B4D7-850AE06F94BA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlikCord.IntegrationTests", "tests\SlikCord.IntegrationTests\SlikCord.IntegrationTests.csproj", "{F8740170-F925-40CA-AA99-AFAA0E8E02F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +68,14 @@ Global
 		{3FE2356D-51F3-42CB-819C-06ABE67E8D57}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FE2356D-51F3-42CB-819C-06ABE67E8D57}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FE2356D-51F3-42CB-819C-06ABE67E8D57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C36A61D7-EDBA-4777-B4D7-850AE06F94BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C36A61D7-EDBA-4777-B4D7-850AE06F94BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C36A61D7-EDBA-4777-B4D7-850AE06F94BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C36A61D7-EDBA-4777-B4D7-850AE06F94BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8740170-F925-40CA-AA99-AFAA0E8E02F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8740170-F925-40CA-AA99-AFAA0E8E02F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8740170-F925-40CA-AA99-AFAA0E8E02F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8740170-F925-40CA-AA99-AFAA0E8E02F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,6 +87,8 @@ Global
 		{4B3A2A37-4F6B-4F5D-94D9-3BF6FCC723AE} = {400B4B8E-5876-43F5-863A-EE99E6B6A1F1}
 		{08680861-E930-4C71-A195-A48ED9994383} = {E489BADE-712B-41D0-8D39-F2D6976C66F6}
 		{3FE2356D-51F3-42CB-819C-06ABE67E8D57} = {E489BADE-712B-41D0-8D39-F2D6976C66F6}
+		{C36A61D7-EDBA-4777-B4D7-850AE06F94BA} = {400B4B8E-5876-43F5-863A-EE99E6B6A1F1}
+		{F8740170-F925-40CA-AA99-AFAA0E8E02F9} = {E489BADE-712B-41D0-8D39-F2D6976C66F6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6A93E74-376C-4395-AD7B-E465B401FB1C}
