@@ -126,7 +126,7 @@ namespace Slik.Cache.Tests
         [TestMethod]
         public async Task RefreshAsync_SlidingExpiration_DoesNotExpire()
         {
-            int timeoutInMs = 100;
+            int timeoutInMs = 200;
             byte[] expectedSequence = new byte[] { 1, 2, 3 };
             string key = "key1";
 
