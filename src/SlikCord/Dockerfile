@@ -1,20 +1,15 @@
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
-WORKDIR /app
+ARG FRAMEWORK
+FROM mcr.microsoft.com/dotnet/aspnet:${FRAMEWORK} AS base
 EXPOSE 80
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-WORKDIR /src
-COPY ["src/SlikCord/SlikCord.csproj", "src/SlikCord/"]
-RUN dotnet restore "src/SlikCord/SlikCord.csproj"
+ARG FRAMEWORK
+WORKDIR /sln
 COPY . .
-WORKDIR "/src/src/SlikCord"
-RUN dotnet build "SlikCord.csproj" -c Release -o /app/build
-
-FROM build AS publish
-RUN dotnet publish "SlikCord.csproj" -c Release -o /app/publish
+RUN dotnet publish "/sln/src/SlikCord/SlikCord.csproj" -c Release -o /app/publish --framework net${FRAMEWORK}
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "SlikCord.dll"]

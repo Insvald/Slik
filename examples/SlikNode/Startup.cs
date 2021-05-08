@@ -87,6 +87,10 @@ namespace Slik.Node
                 logger.Fatal(ex, $"Fatal error occured: {ex.Message}. The node is closing.");
                 return -1;
             }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         internal static X509Certificate2 LoadCertificate(string certificateName)

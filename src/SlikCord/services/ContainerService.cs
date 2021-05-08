@@ -22,19 +22,23 @@ namespace Slik.Cord.Services
 
         public override async Task ListStream(ListContainersRequest request, IServerStreamWriter<ListContainerMessage> responseStream, ServerCallContext context)
         {            
-            using var streamingCall = _client.ListStream(request, context.ToCallOptions());
-            var status = streamingCall.GetStatus();
+            using var streamingCall = _client.ListStream(request, context.ToCallOptions());           
 
-            if (status.StatusCode == StatusCode.OK)
+            try
             {
-                do
+                await foreach (var containerMessage in 
+                    streamingCall
+                        .ResponseStream
+                        .ReadAllAsync(context.CancellationToken)
+                        .ConfigureAwait(false))
                 {
-                    await responseStream.WriteAsync(streamingCall.ResponseStream.Current).ConfigureAwait(false);
+                    await responseStream.WriteAsync(containerMessage).ConfigureAwait(false);
                 }
-                while (await streamingCall.ResponseStream.MoveNext().ConfigureAwait(false));
             }
-            else
-                throw new RpcException(status, streamingCall.GetTrailers());
+            catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
+            {
+                // stream cancelled
+            }
         }
         
         public override async Task<CreateContainerResponse> Create(CreateContainerRequest request, ServerCallContext context) =>        

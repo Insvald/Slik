@@ -70,6 +70,10 @@ namespace Slik.Cord
                 logger.Fatal(ex, $"Fatal error occured: {ex.Message} The node is closing.");
                 return -1;
             }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         

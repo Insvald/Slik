@@ -5,6 +5,7 @@
     <UserSecretsId>e27e68d6-2a71-43c8-a7f8-a3090eb95077</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
+    <DockerfileBuildArguments>--build-arg FRAMEWORK=6.0</DockerfileBuildArguments>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
     <RootNamespace>Slik.Cord</RootNamespace>
     <Nullable>enable</Nullable>
@@ -12,7 +13,7 @@
     <Company></Company>
     <Product>Slik</Product>
     <Copyright>(c) 2021 Ilya Rovensky</Copyright>
-    <Description>Containerd GRPC proxy</Description>
+    <Description>Containerd GRPC HTTP proxy</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,7 +25,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.*" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.8" />
     <PackageReference Include="CommandLineParser" Version="2.*" />
     <PackageReference Include="Serilog.AspNetCore" Version="4.*" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.*" />
@@ -32,11 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="**/*.proto" GrpcServices="Client,Server" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="assets\config.toml" />
+    <Protobuf Include="**/*.proto" Exclude="protos/types/descriptor.proto" GrpcServices="Client,Server" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,5 +44,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
 </Project>
