@@ -25,6 +25,11 @@ jobs:
         file: src/SlikCord/Dockerfile
         push: true
         tags: insvald/slik-cord:5.0
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        registry: docker.pkg.github.com
+        repository: insvald/slik/slik-cord
+        tag_with_ref: true
     - name: build .Net 6 container
       uses: docker/build-push-action@v2.4.0
       with:
@@ -32,6 +37,11 @@ jobs:
         file: src/SlikCord/Dockerfile
         push: true
         tags: insvald/slik-cord:6.0        
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        registry: docker.pkg.github.com
+        repository: insvald/slik/slik-cord
+        tag_with_ref: true
     - name: Start containers (docker-compose)
       run: |
                     docker-compose up -d  
