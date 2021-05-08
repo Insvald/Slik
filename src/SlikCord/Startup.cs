@@ -24,17 +24,17 @@ namespace Slik.Cord
 
         internal class CommandLineOptions
         {
-            [Option(shortName: 'p', longName: "port", Required = false, HelpText = "Port to use for the local instance.", Default = 80)]
-            public int Port { get; set; }
+            //[Option(shortName: 'p', longName: "port", Required = false, HelpText = "Port to use for the local instance.", Default = 80)]
+            //public int Port { get; set; }
 
             [Option(shortName: 'f', longName: "folder", Required = false, HelpText = "Folder for local data.", Default = null)]
             public string? Folder { get; set; }
 
-            [Option(shortName: 'x', longName: "external", Required = false, HelpText = "Use external (default) Containerd instance.", Default = false)]
+            [Option(shortName: 'x', longName: "external", Required = false, HelpText = "Use external (default) containerd instance.", Default = false)]
             public bool UseExternalContainerdInstance { get; set; }
 
-            [Option(shortName: 's', longName: "use-self-signed", Required = false, HelpText = "Use self-signed certificates", Default = false)]
-            public bool UseSelfSignedCertificates { get; set; }
+            //[Option(shortName: 's', longName: "use-self-signed", Required = false, HelpText = "Use self-signed certificates", Default = false)]
+            //public bool UseSelfSignedCertificates { get; set; }
         }
 
         public static async Task<int> StartHostAsync(CommandLineOptions options)
@@ -47,7 +47,7 @@ namespace Slik.Cord
 
             using var logger = CreateLogger(Path.Combine(options.Folder, "Logs"));
 
-            logger.Information($"Slik Cord v{Assembly.GetExecutingAssembly().GetName().Version}. Listening on port {options.Port}");
+            logger.Information($"Slik Cord v{Assembly.GetExecutingAssembly().GetName().Version}. Listening on port 80");
 
             try
             {

@@ -12,8 +12,12 @@
     <Authors>Ilya Rovensky</Authors>
     <Company></Company>
     <Product>Slik</Product>
-    <Copyright>(c) 2021 Ilya Rovensky</Copyright>
-    <Description>Containerd GRPC HTTP proxy</Description>
+    <Copyright>Copyright © 2021 Ilya Rovensky</Copyright>
+    <Description>Containerd gRPC HTTP proxy</Description>
+    <PackageId>Slik.Cord</PackageId>
+    <PackageProjectUrl>https://github.com/Insvald/Slik</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Insvald/Slik</RepositoryUrl>
+    <PackageTags>containerd;gRPC;proxy</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
