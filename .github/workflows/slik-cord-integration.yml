@@ -37,4 +37,4 @@ jobs:
     - name: Start container
       run: docker run -d -p 3099:80 ghcr.io/insvald/slik-cord:5.0
     - name: Restore, build and test
-      run: dotnet test tests/SlikCord.IntegrationTests
+      run: dotnet test tests/SlikCord.IntegrationTests --framework net5.0
