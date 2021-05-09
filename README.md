@@ -56,6 +56,7 @@ SlikNode --port=3094 --folder="node 3" --members=localhost:3092,localhost:3093,l
 - [x] More unit and integration tests to cover adding/removing cluster members
 - [ ] Docker compose for starting cluster in containers
 
+[![Slik.Cord tests](https://github.com/Insvald/Slik/actions/workflows/slik-cord-integration.yml/badge.svg)](https://github.com/Insvald/Slik/actions/workflows/slik-cord-integration.yml)
 # Slik.Cord
 
 A gRPC HTTP proxy for [containerd](https://github.com/containerd/containerd) in C# and Net 5.0/6.0. 
