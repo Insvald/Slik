@@ -30,7 +30,8 @@ namespace Slik.Cord.IntegrationTests
             _isCiEnvironment = Environment.ExpandEnvironmentVariables("%CI%").Equals("true", StringComparison.OrdinalIgnoreCase);
             Console.WriteLine($"{(_isCiEnvironment ? "Running" : "Not running")} in CI environment");
 
-            _channel = GrpcChannel.ForAddress($"http://{(_isCiEnvironment ? "containerd" : "localhost")}:{SlikCordContainer.HostPort}");
+            //_channel = GrpcChannel.ForAddress($"http://{(_isCiEnvironment ? "containerd" : "localhost")}:{SlikCordContainer.HostPort}");
+            _channel = GrpcChannel.ForAddress($"http://localhost:{SlikCordContainer.HostPort}");
             Headers = new Metadata { { "containerd-namespace", "test-slik-cord" } };
             //Headers = new Metadata { { "containerd-namespace", "default" } };                       
         }       
