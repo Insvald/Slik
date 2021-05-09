@@ -1,6 +1,14 @@
-name: Integration tests for Slik.Cord
+name: Slik.Cord tests
 
 on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'src/SlikCord/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'src/SlikCord/**'
   workflow_dispatch:
 
 jobs:
