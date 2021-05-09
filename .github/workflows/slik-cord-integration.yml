@@ -27,14 +27,27 @@ jobs:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
-    - name: Build and push .Net 5 container     
+        
+    - name: Build and push .NET 5 container     
       uses: docker/build-push-action@v2
       with:
         build-args: FRAMEWORK=5.0
         push: true
         file: src/SlikCord/Dockerfile
         tags: ghcr.io/insvald/slik-cord:5.0        
-    - name: Start container
+    - name: Start container for .NET 5
       run: docker run -d -p 3099:80 ghcr.io/insvald/slik-cord:5.0
-    - name: Restore, build and test
+    - name: Restore, build and test .NET 5
       run: dotnet test tests/SlikCord.IntegrationTests --framework net5.0
+      
+    - name: Build and push .NET 6 container     
+      uses: docker/build-push-action@v2
+      with:
+        build-args: FRAMEWORK=6.0
+        push: true
+        file: src/SlikCord/Dockerfile
+        tags: ghcr.io/insvald/slik-cord:6.0        
+    - name: Start container for .NET 6
+      run: docker run -d -p 3098:80 ghcr.io/insvald/slik-cord:6.0
+    - name: Restore, build and test .NET 6
+      run: dotnet test tests/SlikCord.IntegrationTests --framework net6.0
