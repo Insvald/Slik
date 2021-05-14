@@ -7,12 +7,14 @@ on:
       - '.github/**'
       - '**/*.md'
       - 'src/SlikCord/**'
+      - 'tests/**'
   pull_request:
     branches: [ master ]
     paths-ignore:
       - '.github/**'
       - '**/*.md'
       - 'src/SlikCord/**'
+      - 'tests/**'
   workflow_dispatch:
 
 jobs:
