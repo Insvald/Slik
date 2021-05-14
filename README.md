@@ -67,8 +67,9 @@ Containerd API works locally via Unix domain socket (in Linux) or named pipe (in
 Run SlikCord (preferably in a container). Connect to port 80 from any client with gRPC support using the regular [containerd API](https://github.com/containerd/containerd/tree/master/api).
 
 ## Roadmap
-- [x] Containers, images, version APIs supported
-- [ ] Support more APIs
+- [x] Support for all containerd APIs
+- [x] Integration tests for containers, images, version, content, events, introspection, namespaces
+- [ ] Integration tests for diff, leases, snapshots, tasks, ttrpc-events
 - [ ] Switch to HTTPS
 - [ ] Support self-signed certificates
 - [ ] Named pipes support

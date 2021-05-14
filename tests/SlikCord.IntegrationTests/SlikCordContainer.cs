@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 
 namespace Slik.Cord.IntegrationTests
 {
-    public static class SlikCordContainer
+    
+    public class SlikCordContainer
     {
 #if NET5_0
         private const string NetFramework = "5.0";
@@ -17,16 +18,17 @@ namespace Slik.Cord.IntegrationTests
         private const string NetFramework = "6.0";
         public const ushort HostPort = 3098;
 #endif
+       
+        public readonly string ImageName = $"test-slik-cord:{NetFramework}";
+        public readonly string ContainerId = $"test-slik-cord-{NetFramework}";
 
-        private static bool RecreateContainer = true;
-        
-        public static readonly string ImageName = $"test-slik-cord:{NetFramework}";
-        public static readonly string ContainerId = $"test-slik-cord-{NetFramework}";
+        private readonly Task? _prepareTask;
+        private bool _isContainerReady;
 
-        private static Task? _prepareTask;
-        private static bool _isContainerReady;
+        // Using singleton because we do not want to recreate the container for each test
+        public static SlikCordContainer Instance { get; } = new SlikCordContainer(recreateContainer: false);
 
-        public static async ValueTask EnsureReady()
+        public async ValueTask EnsureReady()
         { 
             if (!_isContainerReady && _prepareTask != null && !_prepareTask.IsCompleted)
             {
@@ -37,18 +39,20 @@ namespace Slik.Cord.IntegrationTests
                 throw new Exception("Container is not ready");
         }
 
-        static SlikCordContainer()
+        public SlikCordContainer(bool recreateContainer)
         {
             var docker = new DockerProcess();
             bool exists = docker.DoesContainerExistAsync(ContainerId).Result;
-            
-            if (RecreateContainer || !exists)
+
+            if (recreateContainer || !exists)
             {
                 _prepareTask = PrepareContainerAsync();
             }
+            else
+                _isContainerReady = true;
         }
 
-        private static async Task PrepareContainerAsync()
+        private async Task PrepareContainerAsync()
         {
             var docker = new DockerProcess();
 
@@ -69,7 +73,7 @@ namespace Slik.Cord.IntegrationTests
             await WaitForHttpEndpointAsync(TimeSpan.FromSeconds(10));
         }
 
-        private static async Task WaitForHttpEndpointAsync(TimeSpan timeout)
+        private async Task WaitForHttpEndpointAsync(TimeSpan timeout)
         {
             using var client = new HttpClient { Timeout = timeout };
             using var cts = new CancellationTokenSource(timeout);
@@ -106,7 +110,7 @@ namespace Slik.Cord.IntegrationTests
             await Task.Delay(2000);
         }
 
-        public static async Task RemoveContainerAsync()
+        public async Task RemoveContainerAsync()
         {
             var docker = new DockerProcess();
 

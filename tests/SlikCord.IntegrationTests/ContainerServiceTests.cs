@@ -2,6 +2,7 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Slik.Cord.Services;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -23,7 +24,7 @@ namespace Slik.Cord.IntegrationTests
         private const string TestImageName = "hello-world";
         private const string TestContainerId = "test-container";
 
-        private async Task<Container> CreateContainer(string id)
+        private async Task<Container> CreateContainer()
         {
             var container = new Container
             {
@@ -50,7 +51,7 @@ namespace Slik.Cord.IntegrationTests
 
         public ContainerServiceTests()
         {            
-            _container = CreateContainer(TestContainerId).Result;
+            _container = CreateContainer().Result;
         }
 
         [TestCleanup]
