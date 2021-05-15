@@ -20,6 +20,11 @@ using System.Threading.Tasks;
 namespace Slik.Cache.IntegrationTests
 {
     [TestClass]
+#if NET5_0
+    [TestCategory(".Net 5")]
+#else
+    [TestCategory(".Net 6")]
+#endif
     public class SilkCacheIntegrationTests
     {
 #if DEBUG
@@ -102,9 +107,7 @@ namespace Slik.Cache.IntegrationTests
             int instances = 3;
             int startPort = SlikOptions.DefaultPort;
 
-            using var cts = new CancellationTokenSource();
-
-            cts.CancelAfter(TimeSpan.FromSeconds(7));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
             await RunInstances(instances, TestProjectPath, startPort, "--testCache", cts.Token);
 
@@ -163,7 +166,7 @@ namespace Slik.Cache.IntegrationTests
 
             var runTask = RunInstances(instances, TestProjectPath, startPort, "--api", cts.Token);
 
-            await Task.Delay(6000);
+            await Task.Delay(TimeSpan.FromSeconds(3));
 
             try
             {
@@ -182,7 +185,7 @@ namespace Slik.Cache.IntegrationTests
 
             await UseGrpcService<ISlikCacheService>(startPort, service => service.Set(new SetRequest { Key = "key", Value = expectedValue }));
 
-            await Task.Delay(2000);
+            await Task.Delay(TimeSpan.FromSeconds(5));
 
             // checking set
             for (int port = startPort; port < startPort + instances; port++)
@@ -193,7 +196,7 @@ namespace Slik.Cache.IntegrationTests
 
             await UseGrpcService<ISlikCacheService>(startPort, service => service.Remove(new KeyRequest { Key = "key" }));
 
-            await Task.Delay(2000);
+            await Task.Delay(TimeSpan.FromSeconds(5));
 
             // checking remove
             for (int port = startPort; port < startPort + instances; port++)
@@ -222,7 +225,7 @@ namespace Slik.Cache.IntegrationTests
 
             try
             {
-                await Task.Delay(8000);
+                await Task.Delay(TimeSpan.FromSeconds(10));
                 await SetGetRemoveAssertAsync(startPort, instances);
             }
             finally
@@ -252,16 +255,16 @@ namespace Slik.Cache.IntegrationTests
 
             try
             {
-                await Task.Delay(4000);
+                await Task.Delay(TimeSpan.FromSeconds(10));
                 await SetGetRemoveAssertAsync(startPort, instances);
                 await UseGrpcService<ISlikMembershipService>(startPort, m => m.Remove(new MemberRequest { Member = $"https://localhost:{startPort + 2}" }));
-                await Task.Delay(1000);
+                await Task.Delay(TimeSpan.FromSeconds(5));
 
                 var expectedValue = new byte[] { 3, 2, 1 };
 
                 await UseGrpcService<ISlikCacheService>(startPort, service => service.Set(new SetRequest { Key = "key", Value = expectedValue }));
 
-                await Task.Delay(1000);
+                await Task.Delay(TimeSpan.FromSeconds(5));
 
                 // checking that value is not replicated to the removed node
                 var result = await UseGrpcService<ISlikCacheService, ValueResponse>(startPort + 2, service => service.Get(new KeyRequest { Key = "key" }));

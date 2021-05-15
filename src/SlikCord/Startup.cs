@@ -118,7 +118,7 @@ namespace Slik.Cord
                 .AddGrpc();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             (env.IsDevelopment() ? app.UseDeveloperExceptionPage() : app)
                 .UseRouting()
@@ -127,6 +127,16 @@ namespace Slik.Cord
                     endpoints.MapGrpcService<VersionService>();
                     endpoints.MapGrpcService<ContainerService>();
                     endpoints.MapGrpcService<ImageService>();
+                    endpoints.MapGrpcService<IntrospectionService>();
+                    endpoints.MapGrpcService<ContentService>();
+                    endpoints.MapGrpcService<EventService>();
+                    endpoints.MapGrpcService<NamespaceService>();
+                    endpoints.MapGrpcService<TaskService>();
+                    endpoints.MapGrpcService<DiffService>();
+                    endpoints.MapGrpcService<LeaseService>();
+                    endpoints.MapGrpcService<SnapshotService>();
+                    endpoints.MapGrpcService<TtrpcEventService>();
+
                     endpoints.MapGet("/", async context => await context.Response.WriteAsync("Communication with gRPC endpoints must be made through a gRPC client."));
                 });
         }

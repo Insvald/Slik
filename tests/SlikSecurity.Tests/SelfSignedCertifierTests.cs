@@ -38,6 +38,11 @@ namespace Slik.Security.Tests
 
     // Self-signed certificates when the root exists in the store
     [TestClass]
+#if NET5_0
+    [TestCategory(".Net 5")]
+#else
+    [TestCategory(".Net 6")]
+#endif
     public class SelfSignedWithExisting : SelfSignedTests
     {
         protected override CertifierFixture GetFixture(CertificateGenerator generator)
@@ -57,6 +62,11 @@ namespace Slik.Security.Tests
 
     // Self-signed certificates when the root doesn't exist in the store
     [TestClass]
+#if NET5_0
+    [TestCategory(".Net 5")]
+#else
+    [TestCategory(".Net 6")]
+#endif
     public class SelfSignedWithoutExisting : SelfSignedTests
     {
         private X509Certificate2 CreateCertificate(CertificateGenerator generator, string name, CertificateAuthentication auth)

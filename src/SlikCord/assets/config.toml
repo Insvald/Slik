@@ -12,7 +12,7 @@ imports = ["/etc/containerd/runtime_*.toml", "./debug.toml"]
   address = "/run/containerd/debug.sock"
   uid = 0
   gid = 0
-  level = "info"
+  level = "debug"
 
 [metrics]
   address = ""

@@ -16,13 +16,14 @@ namespace Slik.Cord.IntegrationTests
             get 
             {
                 if (!_isCiEnvironment)
-                    SlikCordContainer.EnsureReady().AsTask().Wait();
+                    SlikCordContainer.Instance.EnsureReady().AsTask().Wait();
 
                 return _channel;
             }
         }
 
-        protected static Metadata Headers { get; }
+        protected static Metadata Headers { get; } = new Metadata();
+        protected const string ContainerdNamespace = "test-slik-cord";
 
         static ServiceTestsBase()
         {
@@ -32,8 +33,7 @@ namespace Slik.Cord.IntegrationTests
 
             //_channel = GrpcChannel.ForAddress($"http://{(_isCiEnvironment ? "containerd" : "localhost")}:{SlikCordContainer.HostPort}");
             _channel = GrpcChannel.ForAddress($"http://localhost:{SlikCordContainer.HostPort}");
-            Headers = new Metadata { { "containerd-namespace", "test-slik-cord" } };
-            //Headers = new Metadata { { "containerd-namespace", "default" } };                       
+            Headers.Add("containerd-namespace", ContainerdNamespace);
         }       
 
         [ClassCleanup]

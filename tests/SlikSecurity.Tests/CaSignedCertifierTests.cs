@@ -28,12 +28,22 @@ namespace Slik.Security.Tests
     }
 
     [TestClass]
+#if NET5_0
+    [TestCategory(".Net 5")]
+#else
+    [TestCategory(".Net 6")]
+#endif
     public class CaSignedWithoutClientCertificatesTests : CaSignedTestsBase
     {
         protected override bool UseClientCertificates { get; } = false;
     }
 
     [TestClass]
+#if NET5_0
+    [TestCategory(".Net 5")]
+#else
+    [TestCategory(".Net 6")]
+#endif
     public class CaSignedWithClientCertificatesTests : CaSignedTestsBase
     {
         protected override bool UseClientCertificates { get; } = true;

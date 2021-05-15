@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 namespace Slik.Cache.Tests
 {
     [TestClass]
+#if NET5_0
+    [TestCategory(".Net 5")]
+#else
+    [TestCategory(".Net 6")]
+#endif
     public class NamedLockFactoryTests
     {
         private static async Task<Tuple<bool, bool>> ExecuteTwoTasksWithLocks(

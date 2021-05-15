@@ -20,26 +20,8 @@ namespace Slik.Cord.Services
         public override async Task<ListContainersResponse> List(ListContainersRequest request, ServerCallContext context) =>
             await _client.ListAsync(request, context.ToCallOptions());
 
-        public override async Task ListStream(ListContainersRequest request, IServerStreamWriter<ListContainerMessage> responseStream, ServerCallContext context)
-        {            
-            using var streamingCall = _client.ListStream(request, context.ToCallOptions());           
-
-            try
-            {
-                await foreach (var containerMessage in 
-                    streamingCall
-                        .ResponseStream
-                        .ReadAllAsync(context.CancellationToken)
-                        .ConfigureAwait(false))
-                {
-                    await responseStream.WriteAsync(containerMessage).ConfigureAwait(false);
-                }
-            }
-            catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled)
-            {
-                // stream cancelled
-            }
-        }
+        public override async Task ListStream(ListContainersRequest request, IServerStreamWriter<ListContainerMessage> responseStream, ServerCallContext context) =>
+            await GrpcStreaming.ClientAsync(request, responseStream, _client.ListStream, context).ConfigureAwait(false);
         
         public override async Task<CreateContainerResponse> Create(CreateContainerRequest request, ServerCallContext context) =>        
             await _client.CreateAsync(request, context.ToCallOptions());
