@@ -26,7 +26,7 @@ namespace Slik.Cord.IntegrationTests
         private bool _isContainerReady;
 
         // Using singleton because we do not want to recreate the container for each test
-        public static SlikCordContainer Instance { get; } = new SlikCordContainer(recreateContainer: true);
+        public static SlikCordContainer Instance { get; } = new SlikCordContainer(recreateContainer: false);
 
         public async ValueTask EnsureReady()
         { 

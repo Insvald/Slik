@@ -3,6 +3,7 @@ using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Slik.Cord.IntegrationTests
@@ -46,7 +47,6 @@ namespace Slik.Cord.IntegrationTests
             };
 
             await _client.DeleteAsync(deleteRequest, Headers);
-            await Task.Delay(TimeSpan.FromSeconds(1));
         }
 
         private async Task<RepeatedField<Namespace>> ListNamespaces()
@@ -91,8 +91,9 @@ namespace Slik.Cord.IntegrationTests
             await DeleteNamespace(testNamespace);
 
             var namespaces = await ListNamespaces();
+            bool exists = namespaces.Any(n => n.Name == testNamespace.Name);
 
-            Assert.IsTrue(namespaces.Count == 0);
+            Assert.IsFalse(exists);
         }
 
         [TestMethod]
@@ -100,10 +101,10 @@ namespace Slik.Cord.IntegrationTests
         {
             await UseTestNamespace(async testNamespace => 
             {
-                await Task.Delay(TimeSpan.FromSeconds(1));
                 var namespaces = await ListNamespaces();
+                bool exists = namespaces.Any(n => n.Name == testNamespace.Name);
 
-                Assert.IsTrue(namespaces.Count == 1);
+                Assert.IsTrue(exists);
             });            
         }
 

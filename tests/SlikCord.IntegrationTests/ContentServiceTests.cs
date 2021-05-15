@@ -65,6 +65,8 @@ namespace Slik.Cord.IntegrationTests
                 digest = response.Digest;
             }
 
+            await Task.Delay(TimeSpan.FromSeconds(1));
+
             return digest;
         }
 
