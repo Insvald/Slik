@@ -8,6 +8,11 @@ using System.Security.Cryptography.X509Certificates;
 namespace Slik.Security.Tests
 {
     [TestClass]
+#if NET5_0
+    [TestCategory(".Net 5")]
+#else
+    [TestCategory(".Net 6")]
+#endif
     public class CertificateExportImportTests
     {
         private readonly X509Certificate2 _rootCertificate;

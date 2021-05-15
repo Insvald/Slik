@@ -21,7 +21,7 @@ namespace Slik.Cord.IntegrationTests
 
         private async Task SubscribeGetOrAssert()
         {
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
 
             var subscribeRequest = new SubscribeRequest();
             subscribeRequest.Filters.Add($"topic=='{TestTopic}'");

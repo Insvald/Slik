@@ -46,6 +46,7 @@ namespace Slik.Cord.IntegrationTests
             };
 
             await _client.DeleteAsync(deleteRequest, Headers);
+            await Task.Delay(TimeSpan.FromSeconds(1));
         }
 
         private async Task<RepeatedField<Namespace>> ListNamespaces()
@@ -99,6 +100,7 @@ namespace Slik.Cord.IntegrationTests
         {
             await UseTestNamespace(async testNamespace => 
             {
+                await Task.Delay(TimeSpan.FromSeconds(1));
                 var namespaces = await ListNamespaces();
 
                 Assert.IsTrue(namespaces.Count == 1);
