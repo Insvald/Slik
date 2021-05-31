@@ -1,0 +1,25 @@
+﻿syntax = "proto3";
+
+package specs;
+
+message Spec {
+	string ociVersion = 1;
+	Process process = 2;
+	Root root = 3;
+}
+
+message Process {
+	string cwd = 1;
+	repeated string args = 2;
+	User user = 3;
+}
+
+message Root {
+	string path = 1;
+	bool readonly = 2;
+}
+
+message User {
+	uint32 uid = 1;
+	uint32 gid = 2;
+}

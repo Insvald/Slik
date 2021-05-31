@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Slik.Cord.Services;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,50 +20,22 @@ namespace Slik.Cord.IntegrationTests
     public class ContainerServiceTests : ServiceTestsBase
     {
         private readonly Containers.ContainersClient _client = new(Channel);
+        private readonly ContainerFactory _factory;
         private readonly Container _container;
 
         private const string TestImageName = "hello-world";
-        private const string TestContainerId = "test-container";
-
-        private async Task<Container> CreateContainer()
-        {
-            var container = new Container
-            {
-                Id = TestContainerId,
-                Image = TestImageName,
-                //Runtime = new Container.Types.Runtime { Name = "io.containerd.runhcs.v1" }, // windows
-                Runtime = new Container.Types.Runtime { Name = "io.containerd.runc.v1" }, // linux
-                Spec = Any.Pack(new Empty())
-                // Spec:
-                // https://github.com/containerd/containerd/blob/ab963e1cc16a845567a0e3e971775c29c701fcf8/vendor/github.com/opencontainers/runtime-spec/specs-go/config.go#L6
-                // https://github.com/opencontainers/runtime-spec/blob/master/schema/test/config/good/minimal-for-start.json             
-            };
-
-            try
-            {
-                var createResponse = await _client.CreateAsync(new CreateContainerRequest { Container = container }, Headers);
-                return createResponse.Container;
-            }
-            catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
-            {
-                return container;
-            }
-        }
+        private const string TestContainerId = "test-container";        
 
         public ContainerServiceTests()
-        {            
-            _container = CreateContainer().Result;
+        {
+            _factory = new ContainerFactory(_client, OSPlatform.Linux, Headers);
+            _container = _factory.CreateContainerAsync(TestContainerId, TestImageName).Result;
         }
 
         [TestCleanup]
         public async Task DeleteTestContainer()
         {
-            try
-            {
-                var request = new DeleteContainerRequest { Id = TestContainerId };
-                await _client.DeleteAsync(request, Headers);
-            }
-            catch (RpcException e) when (e.StatusCode == StatusCode.NotFound) { /* already deleted */}
+            await _factory.DeleteContainerAsync(_container);
         }
 
         [TestMethod]

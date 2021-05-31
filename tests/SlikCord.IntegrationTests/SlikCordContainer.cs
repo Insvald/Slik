@@ -18,7 +18,8 @@ namespace Slik.Cord.IntegrationTests
         private const string NetFramework = "6.0";
         public const ushort HostPort = 3098;
 #endif
-       
+        
+        public const ushort ContainerPort = 3100;
         public readonly string ImageName = $"test-slik-cord:{NetFramework}";
         public readonly string ContainerId = $"test-slik-cord-{NetFramework}";
 
@@ -67,7 +68,7 @@ namespace Slik.Cord.IntegrationTests
                 $"FRAMEWORK={NetFramework}");
 
             Console.WriteLine($"Running the container '{ContainerId}'.");
-            await docker.RunAsync(ContainerId, ImageName, $"{HostPort}:80");
+            await docker.RunAsync(ContainerId, ImageName, $"{HostPort}:{ContainerPort}");
 
             Console.WriteLine("Waiting for the container.");
             await WaitForHttpEndpointAsync(TimeSpan.FromSeconds(10));
@@ -107,7 +108,7 @@ namespace Slik.Cord.IntegrationTests
             } while (!cts.IsCancellationRequested);
 
             // http becomes available a little bit early, need to wait more for gRPC channel
-            await Task.Delay(2000);
+            await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
         public async Task RemoveContainerAsync()

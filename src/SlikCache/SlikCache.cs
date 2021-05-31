@@ -219,7 +219,7 @@ namespace Slik.Cache
                                             await _internalCache.RemoveAsync(record.Key, token);
                                     }
 
-                                    await DropAsync(logIndex, token).ConfigureAwait(false);
+                                    await DropAsync(logIndex, false, token).ConfigureAwait(false);
 
                                     handled = false;
                                 }

@@ -5,7 +5,10 @@
       "commandLineArgs": "--folder=\"bin\\Debug\\net6.0\\node 1\" --testCache"
     },
     "Docker": {
-      "commandName": "Docker"
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "publishAllPorts": true,
+      "useSSL": true
     }
   }
 }

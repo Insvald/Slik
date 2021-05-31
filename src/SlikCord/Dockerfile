@@ -1,7 +1,6 @@
 ARG FRAMEWORK
 FROM mcr.microsoft.com/dotnet/aspnet:${FRAMEWORK} AS base
-EXPOSE 80
-EXPOSE 443
+EXPOSE 3100
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG FRAMEWORK
