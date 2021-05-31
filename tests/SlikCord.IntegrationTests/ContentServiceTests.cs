@@ -31,14 +31,14 @@ namespace Slik.Cord.IntegrationTests
                 Ref = objectRef
             });
 
-            await Task.Delay(200); // sometimes we check the write results too fast
+            await Task.Delay(TimeSpan.FromSeconds(0.2)); // sometimes we check the write results too fast
 
             return objectRef;
         }        
 
         private ByteString GetRandomBytes()
         {
-            var bytes = new byte[1024];
+            var bytes = new byte[256];
             rnd.NextBytes(bytes);
             return ByteString.CopyFrom(bytes);
         }
@@ -75,9 +75,9 @@ namespace Slik.Cord.IntegrationTests
             string digest = await GetTestObject();
 
             try
-            {
+            {               
                 await usageAction(digest);
-            }
+            }           
             finally
             {
                 await _client.DeleteAsync(new DeleteContentRequest { Digest = digest }, Headers);
