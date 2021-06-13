@@ -7,7 +7,7 @@
 # Slik.Cache
 Distributed In-process Cache in C# and Net 5.0/6.0 with external gRPC API (HTTP/2, client/server certificates)
 
-Based on a [magnificent dotNext library](https://github.com/sakno/dotNext) and its Raft cluster implementation. 
+Based on a [magnificent dotNext library](https://github.com/dotnet/dotNext) and its Raft cluster implementation. 
 
 Implements [IDistributedCache](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.caching.distributed.idistributedcache), a standard interface for .Net Core cache.
 
