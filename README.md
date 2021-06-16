@@ -55,6 +55,11 @@ SlikNode --port=3094 --folder="node 3" --members=localhost:3092,localhost:3093,l
 - [x] Support adding/removal of cluster members in runtime
 - [x] More unit and integration tests to cover adding/removing cluster members
 - [ ] Docker compose for starting cluster in containers
+- [ ] Use IMemberDiscoveryService instead of config changes for cluster membership
+- [ ] Decouple command handling with Interpreter Framework
+- [ ] Optimize log entries, binary format instead of JSON
+- [ ] Backgound log compaction
+- [ ] Distributed locks
 
 <a name="slik-cord"></a>
 [![Slik.Cord tests](https://github.com/Insvald/Slik/actions/workflows/slik-cord-integration.yml/badge.svg)](https://github.com/Insvald/Slik/actions/workflows/slik-cord-integration.yml)
